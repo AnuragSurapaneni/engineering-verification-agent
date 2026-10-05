@@ -1,0 +1,149 @@
+{
+  "reynolds_number": {
+    "equation": "Re = rho * V * D / mu",
+    "alternate_forms": [
+      "Re = V * D / nu",
+      "Re = rho * V * D / mu"
+    ],
+    "sources": [
+      {
+        "title": "White - Fluid Mechanics, 8th Edition",
+        "authors": ["Frank M. White"],
+        "year": 2016,
+        "publisher": "McGraw-Hill",
+        "equation_form": "Re = rho*V*D/mu",
+        "page": 123,
+        "notes": "Standard definition for pipe flow"
+      },
+      {
+        "title": "Munson, Young, Okiishi - Fundamentals of Fluid Mechanics, 8th Edition",
+        "authors": ["Bruce R. Munson", "Theodore H. Okiishi", "Wade W. Huebsch", "Alric P. Rothmayer"],
+        "year": 2016,
+        "publisher": "Wiley",
+        "equation_form": "Re = V*D/nu",
+        "page": 456,
+        "notes": "Uses kinematic viscosity form"
+      },
+      {
+        "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
+        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "year": 2018,
+        "publisher": "McGraw-Hill",
+        "equation_form": "Re = V*D/nu = rho*V*D/mu",
+        "page": 312,
+        "notes": "Both forms presented as equivalent"
+      }
+    ],
+    "assumptions": [
+      "continuum hypothesis",
+      "newtonian fluid",
+      "constant properties",
+      "fully developed flow"
+    ],
+    "validity_range": "All flow regimes (laminar, transitional, turbulent)",
+    "flow_regime_criteria": {
+      "laminar": "Re < 2300",
+      "transitional": "2300 <= Re <= 4000",
+      "turbulent": "Re > 4000"
+    }
+  },
+  "darcy_weisbach": {
+    "equation": "ΔP = f * (L/D) * (rho * V^2 / 2)",
+    "alternate_forms": [
+      "ΔP = f * (L/D) * (rho * V^2 / 2)",
+      "h_f = f * (L/D) * (V^2 / (2*g))  (head loss form)"
+    ],
+    "sources": [
+      {
+        "title": "White - Fluid Mechanics, 8th Edition",
+        "authors": ["Frank M. White"],
+        "year": 2016,
+        "publisher": "McGraw-Hill",
+        "equation_form": "ΔP = f * (L/D) * (rho * V^2 / 2)",
+        "page": 342,
+        "notes": "Darcy-Weisbach equation for pipe friction loss"
+      },
+      {
+        "title": "Moody - Friction Factors for Pipe Flow",
+        "authors": ["L. F. Moody"],
+        "year": 1944,
+        "publisher": "ASME Transactions",
+        "equation_form": "h_f = f * (L/D) * (V^2 / (2*g))",
+        "page": 671,
+        "notes": "Original Moody chart paper, head loss form"
+      },
+      {
+        "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
+        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "year": 2018,
+        "publisher": "McGraw-Hill",
+        "equation_form": "ΔP = f * (L/D) * (rho * V^2 / 2)",
+        "page": 389,
+        "notes": "Pressure drop form with Darcy friction factor"
+      }
+    ],
+    "assumptions": [
+      "steady, incompressible flow",
+      "fully developed flow",
+      "constant cross-section circular pipe",
+      "constant friction factor along pipe length",
+      "negligible entrance/exit effects"
+    ],
+    "friction_factor_correlations": {
+      "laminar": "f = 64 / Re",
+      "turbulent_smooth": "Blasius: f = 0.316 / Re^0.25 (Re < 10^5)",
+      "turbulent_rough": "Colebrook-White implicit equation",
+      "moody_chart": "Graphical solution for all regimes"
+    }
+  },
+  "bernoulli": {
+    "equation": "P1/rho + V1^2/2 + g*z1 = P2/rho + V2^2/2 + g*z2",
+    "alternate_forms": [
+      "P/rho + V^2/2 + gz = constant (along streamline)",
+      "P/rho*g + V^2/(2g) + z = constant (head form)"
+    ],
+    "sources": [
+      {
+        "title": "White - Fluid Mechanics, 8th Edition",
+        "authors": ["Frank M. White"],
+        "year": 2016,
+        "publisher": "McGraw-Hill",
+        "equation_form": "P/rho + V^2/2 + gz = constant",
+        "page": 187,
+        "notes": "Energy form per unit mass"
+      },
+      {
+        "title": "Munson et al. - Fundamentals of Fluid Mechanics, 8th Edition",
+        "authors": ["Bruce R. Munson", "Theodore H. Okiishi", "Wade W. Huebsch", "Alric P. Rothmayer"],
+        "year": 2016,
+        "publisher": "Wiley",
+        "equation_form": "P/gamma + V^2/(2g) + z = constant",
+        "page": 201,
+        "notes": "Head form (per unit weight)"
+      },
+      {
+        "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
+        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "year": 2018,
+        "publisher": "McGraw-Hill",
+        "equation_form": "P/rho + V^2/2 + gz = constant",
+        "page": 245,
+        "notes": "Both forms shown with limitations clearly stated"
+      }
+    ],
+    "assumptions": [
+      "steady flow",
+      "incompressible flow",
+      "inviscid (no friction losses)",
+      "along a streamline",
+      "no shaft work (pumps/turbines)",
+      "no heat transfer"
+    ],
+    "limitations": [
+      "Not valid across streamlines in rotational flow",
+      "Not valid in boundary layers (viscous effects)",
+      "Not valid for compressible flow at high Mach numbers",
+      "Does not account for pump/turbine work or heat addition"
+    ]
+  }
+}
