@@ -3,29 +3,22 @@
 Numerical calculation engine for engineering verification.
 
 Computes independent numerical results for standard engineering equations.
-
-Usage:
-    python calculate.py --problem reynolds_number --inputs '{"rho":1.177,"V":20,"D":0.1,"mu":1.85e-5}'
-    python calculate.py --problem pressure_drop --inputs '{"f":0.02,"L":10,"D":0.05,"rho":997,"V":2}'
-    python calculate.py --problem bernoulli --inputs '{"rho":997,"V1":3,"D1":0.1,"D2":0.05,"P1":200000}'
 """
 
 import sys
 import json
 import argparse
 import math
-from typing import Dict, Any, Union
+from typing import Dict, Any
 
 
 def calculate_reynolds(inputs: Dict[str, float]) -> Dict[str, Any]:
-    """Calculate Reynolds number: Re = rho * V * D / mu = V * D / nu"""
-    # Support both rho+mu and nu
+    """Calculate Reynolds number: Re = rho * V * D / mu"""
     if "nu" in inputs:
         Re = inputs["V"] * inputs["D"] / inputs["nu"]
     else:
         Re = inputs["rho"] * inputs["V"] * inputs["D"] / inputs["mu"]
 
-    # Determine flow regime
     if Re < 2300:
         regime = "laminar"
     elif Re <= 4000:
@@ -79,17 +72,223 @@ def calculate_bernoulli(inputs: Dict[str, float]) -> Dict[str, Any]:
     }
 
 
-PROBLEM_CALCULATORS = {
-    "reynolds_number": calculate_reynolds,
-    "pressure_drop": calculate_pressure_drop,
-    "bernoulli": calculate_bernoulli,
-}
+def calculate_mach_number(inputs: Dict[str, float]) -> Dict[str, Any]:
+    """Calculate Mach Number: M = V / a"""
+    V = inputs["V"]
+    a = inputs["a"]
+
+    M = V / a
+
+    return {
+        "mach_number": M,
+        "equation": "M = V / a"
+    }
+
+
+def calculate_froude_number(inputs: Dict[str, float]) -> Dict[str, Any]:
+    """Calculate Froude Number: Fr = V / sqrt(g*D)"""
+    V = inputs["V"]
+    g = inputs["g"]
+    D = inputs["D"]
+
+    Fr = V / math.sqrt(g * D)
+
+    return {
+        "froude_number": Fr,
+        "equation": "Fr = V / sqrt(g*D)"
+    }
+
+
+def calculate_euler_number(inputs: Dict[str, float]) -> Dict[str, Any]:
+    """Calculate Euler Number: Eu = deltaP / (rho * V^2)"""
+    deltaP = inputs["deltaP"]
+    rho = inputs["rho"]
+    V = inputs["V"]
+
+    Eu = deltaP / (rho * V**2)
+
+    return {
+        "euler_number": Eu,
+        "equation": "Eu = Δp / (ρ * V²)"
+    }
+
+
+def calculate_weber_number(inputs: Dict[str, float]) -> Dict[str, Any]:
+    """Calculate Weber Number: We = rho * V^2 * L / sigma"""
+    rho = inputs["rho"]
+    V = inputs["V"]
+    L = inputs["L"]
+    sigma = inputs["sigma"]
+
+    We = rho * V**2 * L / sigma
+
+    return {
+        "weber_number": We,
+        "equation": "We = ρ * V² * L / σ"
+    }
+
+
+def calculate_prandtl_number(inputs: Dict[str, float]) -> Dict[str, Any]:
+    """Calculate Prandtl Number: Pr = mu * cp / k"""
+    mu = inputs["mu"]
+    cp = inputs["cp"]
+    k = inputs["k"]
+
+    Pr = mu * cp / k
+
+    return {
+        "prandtl_number": Pr,
+        "equation": "Pr = μ * cp / k"
+    }
+
+
+def calculate_schmidt_number(inputs: Dict[str, float]) -> Dict[str, Any]:
+    """Calculate Schmidt Number: Sc = nu / D_AB"""
+    nu = inputs["nu"]
+    D_AB = inputs["D_AB"]
+
+    Sc = nu / D_AB
+
+    return {
+        "schmidt_number": Sc,
+        "equation": "Sc = ν / D_AB"
+    }
+
+
+def calculate_hagen_poiseuille(inputs: Dict[str, float]) -> Dict[str, Any]:
+    """Calculate Hagen-Poiseuille Law (Laminar): Q = πΔpr^4/(8μL)"""
+    deltaP = inputs["deltaP"]
+    r = inputs["r"]
+    mu = inputs["mu"]
+    L = inputs["L"]
+
+    Q = math.pi * deltaP * r**4 / (8 * mu * L)
+
+    return {
+        "flow_rate_m3_s": Q,
+        "equation": "Q = πΔpr^4/(8μL)"
+    }
+
+
+def calculate_drag(inputs: Dict[str, float]) -> Dict[str, Any]:
+    """Calculate Drag Equation: F_D = 0.5 * rho * V^2 * A * C_D"""
+    rho = inputs["rho"]
+    V = inputs["V"]
+    A = inputs["A"]
+    CD = inputs["CD"]
+
+    FD = 0.5 * rho * V**2 * A * CD
+
+    return {
+        "drag_Newton": FD,
+        "equation": "F_D = 0.5 * ρ * V² * A * C_D"
+    }
+
+
+def calculate_lift(inputs: Dict[str, float]) -> Dict[str, Any]:
+    """Calculate Lift Equation: F_L = 0.5 * rho * V^2 * A * C_L"""
+    rho = inputs["rho"]
+    V = inputs["V"]
+    A = inputs["A"]
+    CL = inputs["CL"]
+
+    FL = 0.5 * rho * V**2 * A * CL
+
+    return {
+        "lift_Newton": FL,
+        "equation": "F_L = 0.5 * ρ * V² * A * C_L"
+    }
+
+
+def calculate_lift_to_drag(inputs: Dict[str, float]) -> Dict[str, Any]:
+    """Calculate Lift-to-Drag Ratio: L/D = C_L / C_D"""
+    CL = inputs["CL"]
+    CD = inputs["CD"]
+
+    LDR = CL / CD
+
+    return {
+        "lift_to_drag_ratio": LDR,
+        "equation": "L/D = C_L / C_D"
+    }
+
+
+def calculate_skin_friction_laminar(inputs: Dict[str, float]) -> Dict[str, Any]:
+    """Calculate Skin Friction Coefficient (Laminar): C_f = 0.664 / sqrt(Re_x)"""
+    Re_x = inputs["Re_x"]
+
+    Cf = 0.664 / math.sqrt(Re_x)
+
+    return {
+        "skin_friction_coefficient": Cf,
+        "equation": "C_f = 0.664 / sqrt(Re_x)"
+    }
+
+
+def calculate_skin_friction_turbulent(inputs: Dict[str, float]) -> Dict[str, Any]:
+    """Calculate Skin Friction Coefficient (Turbulent): C_f = 0.0592 / Re_x^(1/5)"""
+    Re_x = inputs["Re_x"]
+
+    Cf = 0.0592 / Re_x**(1/5)
+
+    return {
+        "skin_friction_coefficient": Cf,
+        "equation": "C_f = 0.0592 / Re_x^(1/5)"
+    }
+
+
+def calculate_boundary_layer_laminar(inputs: Dict[str, float]) -> Dict[str, Any]:
+    """Calculate Boundary Layer Thickness (Laminar): delta/x = 5.0 / sqrt(Re_x)"""
+    Re_x = inputs["Re_x"]
+    x = inputs["x"]
+
+    delta = 5.0 * x / math.sqrt(Re_x)
+
+    return {
+        "boundary_layer_thickness_m": delta,
+        "equation": "δ/x = 5.0 / sqrt(Re_x)"
+    }
+
+
+def calculate_boundary_layer_turbulent(inputs: Dict[str, float]) -> Dict[str, Any]:
+    """Calculate Boundary Layer Thickness (Turbulent): delta/x = 0.37 / Re_x^(1/5)"""
+    Re_x = inputs["Re_x"]
+    x = inputs["x"]
+
+    delta = 0.37 * x / Re_x**(1/5)
+
+    return {
+        "boundary_layer_thickness_m": delta,
+        "equation": "δ/x = 0.37 / Re_x^(1/5)"
+    }
+
+
+def calculate_stagnation(inputs: Dict[str, float]) -> Dict[str, Any]:
+    """Calculate Stagnation Properties: p0 = p*(1 + (γ-1)/2 * M^2)^(γ/(γ-1))"""
+    p = inputs["p"]
+    M = inputs["M"]
+    gamma = inputs.get("gamma", 1.4)
+
+    p0 = p * (1 + (gamma - 1) / 2 * M**2)**(gamma / (gamma - 1))
+    T0 = inputs.get("T", 300) * (1 + (gamma - 1) / 2 * M**2)
+
+    return {
+        "stagnation_pressure_Pa": p0,
+        "stagnation_temperature_K": T0,
+        "equation": "p0 = p*(1 + (γ-1)/2 * M^2)^(γ/(γ-1))"
+    }
 
 
 def main():
     parser = argparse.ArgumentParser(description="Engineering calculation engine")
-    parser.add_argument("--problem", required=True, choices=list(PROBLEM_CALCULATORS.keys()),
-                        help="Problem type to calculate")
+    parser.add_argument("--problem", required=True, choices=sorted({
+        "reynolds_number", "pressure_drop", "bernoulli", "mach_number",
+        "froude_number", "euler_number", "weber_number", "prandtl_number",
+        "schmidt_number", "hagen_poiseuille", "drag", "lift",
+        "drag_to_lift", "skin_friction_laminar", "skin_friction_turbulent",
+        "boundary_layer_laminar", "boundary_layer_turbulent", "stagnation"
+    }),
+        help="Problem type to calculate")
     parser.add_argument("--inputs", required=True, help="JSON string of input parameters")
     parser.add_argument("--pretty", action="store_true", help="Pretty print output")
 
@@ -101,7 +300,26 @@ def main():
         print(f"Error: Invalid JSON inputs: {e}", file=sys.stderr)
         sys.exit(1)
 
-    calculator = PROBLEM_CALCULATORS[args.problem]
+    calculator = {
+        "reynolds_number": calculate_reynolds,
+        "pressure_drop": calculate_pressure_drop,
+        "bernoulli": calculate_bernoulli,
+        "mach_number": calculate_mach_number,
+        "froude_number": calculate_froude_number,
+        "euler_number": calculate_euler_number,
+        "weber_number": calculate_weber_number,
+        "prandtl_number": calculate_prandtl_number,
+        "schmidt_number": calculate_schmidt_number,
+        "hagen_poiseuille": calculate_hagen_poiseuille,
+        "drag": calculate_drag,
+        "lift": calculate_lift,
+        "drag_to_lift": calculate_lift_to_drag,
+        "skin_friction_laminar": calculate_skin_friction_laminar,
+        "skin_friction_turbulent": calculate_skin_friction_turbulent,
+        "boundary_layer_laminar": calculate_boundary_layer_laminar,
+        "boundary_layer_turbulent": calculate_boundary_layer_turbulent,
+        "stagnation": calculate_stagnation,
+    }[args.problem]
 
     try:
         result = calculator(inputs)

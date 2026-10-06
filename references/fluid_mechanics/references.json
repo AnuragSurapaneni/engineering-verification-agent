@@ -145,5 +145,1236 @@
       "Not valid for compressible flow at high Mach numbers",
       "Does not account for pump/turbine work or heat addition"
     ]
+  },
+  "continuity_incompressible": {
+    "equation": "d/dt ∫_CV ρ dV + ∫_CS ρ(V·n) dA = 0",
+    "alternate_forms": [
+      "∂ρ/∂t + ∇·(ρV) = 0 (differential form)"
+    ],
+    "sources": [
+      {
+        "title": "White - Fluid Mechanics, 8th Edition",
+        "authors": ["Frank M. White"],
+        "year": 2016,
+        "publisher": "McGraw-Hill",
+        "equation_form": "∂ρ/∂t + ∇·(ρV) = 0",
+        "page": 67,
+        "notes": "Continuity equation for incompressible flow"
+      },
+      {
+        "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
+        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "year": 2018,
+        "publisher": "McGraw-Hill",
+        "equation_form": "∂ρ/∂t + ∇·(ρV) = 0",
+        "page": 152,
+        "notes": "Integral and differential forms presented"
+      }
+    ],
+    "assumptions": [
+      "continuum hypothesis",
+      "newtonian fluid",
+      "constant properties"
+    ],
+    "validity_range": "All flow regimes",
+    "equation_form": "d/dt ∫_CV ρ dV + ∫_CS ρ(V·n) dA = 0"
+  },
+  "conservation_momentum": {
+    "equation": "ρ DV/Dt = ∇·σ + ρg",
+    "alternate_forms": [
+      "ρ (∂V/∂t + V·∇V) = -∇p + μ∇²V + ρg (Cauchy equation for Newtonian fluid)"
+    ],
+    "sources": [
+      {
+        "title": "White - Fluid Mechanics, 8th Edition",
+        "authors": ["Frank M. White"],
+        "year": 2016,
+        "publisher": "McGraw-Hill",
+        "equation_form": "ρ DV/Dt = ∇·σ + ρg",
+        "page": 182,
+        "notes": "Cauchy's equation of motion"
+      },
+      {
+        "title": "Munson et al. - Fundamentals of Fluid Mechanics, 8th Edition",
+        "authors": ["Bruce R. Munson", "Theodore H. Okiishi", "Wade W. Huebsch", "Alric P. Rothmayer"],
+        "year": 2016,
+        "publisher": "Wiley",
+        "equation_form": "ρ a = ΣF",
+        "page": 164,
+        "notes": "Second law of motion for fluid particles"
+      }
+    ],
+    "assumptions": [
+      "continuum hypothesis",
+      "newtonian fluid"
+    ],
+    "validity_range": "All flow regimes"
+  },
+  "conservation_energy": {
+    "equation": "ρ De/Dt = ∇·(k∇T) + Φ + ρr",
+    "alternate_forms": [
+      "ρ T ds/Dt = ∇·(k∇T) + Φ (entropy form)"
+    ],
+    "sources": [
+      {
+        "title": "White - Fluid Mechanics, 8th Edition",
+        "authors": ["Frank M. White"],
+        "year": 2016,
+        "publisher": "McGraw-Hill",
+        "equation_form": "ρ De/Dt = ∇·(k∇T) + Φ + ρr",
+        "page": 245,
+        "notes": "First law of thermodynamics for fluid flow"
+      },
+      {
+        "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
+        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "year": 2018,
+        "publisher": "McGraw-Hill",
+        "equation_form": "ρ De/Dt = ∇·(k∇T) + Φ",
+        "page": 342,
+        "notes": "Energy equation with viscous dissipation"
+      }
+    ],
+    "assumptions": [
+      "continuum hypothesis",
+      "newtonian fluid",
+      "energy conservation"
+    ],
+    "validity_range": "All flow regimes"
+  },
+  "conservation_angular_momentum": {
+    "equation": "dH_CV/dt = ∫_CS r × (ρV)(V·n) dA",
+    "alternate_forms": [
+      "d/dt (∫_CV r × ρV dV) = ∫_CS r × (ρV)(V·n) dA"
+    ],
+    "sources": [
+      {
+        "title": "White - Fluid Mechanics, 8th Edition",
+        "authors": ["Frank M. White"],
+        "year": 2016,
+        "publisher": "McGraw-Hill",
+        "equation_form": "dH_CV/dt = ∫_CS r × (ρV)(V·n) dA",
+        "page": 182,
+        "notes": "Angular momentum equation for control volume"
+      }
+    ],
+    "assumptions": [
+      "continuum hypothesis",
+      "newtonian fluid"
+    ],
+    "validity_range": "All flow regimes"
+  },
+  "euler_equation": {
+    "equation": "ρ(∂V/∂t + V·∇V) = -∇p + ρg",
+    "alternate_forms": [
+      "∂V/∂t + V·∇V = -∇p/ρ + g (dividing by density)"
+    ],
+    "sources": [
+      {
+        "title": "White - Fluid Mechanics, 8th Edition",
+        "authors": ["Frank M. White"],
+        "year": 2016,
+        "publisher": "McGraw-Hill",
+        "equation_form": "ρ(∂V/∂t + V·∇V) = -∇p + ρg",
+        "page": 158,
+        "notes": "Euler's equation for inviscid flow"
+      },
+      {
+        "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
+        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "year": 2018,
+        "publisher": "McGraw-Hill",
+        "equation_form": "ρa = -∇p + ρg",
+        "page": 213,
+        "notes": "Simplified form for steady flow"
+      }
+    ],
+    "assumptions": [
+      "flow is inviscid (no friction)",
+      "fluid is continuous",
+      "body forces act per unit volume"
+    ],
+    "validity_range": "Inviscid flow, no boundary layers"
+  },
+  "potential_flow_velocity": {
+    "equation": "V = ∇φ (velocity potential)",
+    "alternate_forms": [
+      "Vx = ∂φ/∂x, Vy = ∂φ/∂y, Vz = ∂φ/∂z"
+    ],
+    "sources": [
+      {
+        "title": "White - Fluid Mechanics, 8th Edition",
+        "authors": ["Frank M. White"],
+        "year": 2016,
+        "publisher": "McGraw-Hill",
+        "equation_form": "V = ∇φ",
+        "page": 165,
+        "notes": "Velocity potential for irrotational flow"
+      },
+      {
+        "title": "Munson et al. - Fundamentals of Fluid Mechanics, 8th Edition",
+        "authors": ["Bruce R. Munson", "Theodore H. Okiishi", "Wade W. Huebsch", "Alric P. Rothmayer"],
+        "year": 2016,
+        "publisher": "Wiley",
+        "equation_form": "V = ∇φ",
+        "page": 472,
+        "notes": "Used for flow around objects"
+      }
+    ],
+    "assumptions": [
+      "flow is irrotational (ω = 0)",
+      "fluid is inviscid",
+      "boundaries are smooth"
+    ],
+    "validity_range": "Irrotational, inviscid flow"
+  },
+  "stream_function": {
+    "equation": "V = (∂ψ/∂y, -∂ψ/∂x) (2D flow)",
+    "alternate_forms": [
+      "u = ∂ψ/∂y, v = -∂ψ/∂x (2D Cartesian)",
+      "Vψ = ∇ × (ψ k) (2D in vector form)"
+    ],
+    "sources": [
+      {
+        "title": "White - Fluid Mechanics, 8th Edition",
+        "authors": ["Frank M. White"],
+        "year": 2016,
+        "publisher": "McGraw-Hill",
+        "equation_form": "V = (∂ψ/∂y, -∂ψ/∂x)",
+        "page": 166,
+        "notes": "Stream function for 2D incompressible flow"
+      },
+      {
+        "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
+        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "year": 2018,
+        "publisher": "McGraw-Hill",
+        "equation_form": "u = ∂ψ/∂y, v = -∂ψ/∂x",
+        "page": 278,
+        "notes": "Used to visualize flow patterns"
+      }
+    ],
+    "assumptions": [
+      "flow is 2D and incompressible",
+      "∂u/∂x + ∂v/∂y = 0 (continuity)"
+    ],
+    "validity_range": "2D incompressible flow"
+  },
+  "circulation": {
+    "equation": "Γ = ∮_C V·ds",
+    "alternate_forms": [
+      "Γ = ∫_C (V · ds) = ∫_S (∇ × V) · dS (Stokes theorem)"
+    ],
+    "sources": [
+      {
+        "title": "White - Fluid Mechanics, 8th Edition",
+        "authors": ["Frank M. White"],
+        "year": 2016,
+        "publisher": "McGraw-Hill",
+        "equation_form": "Γ = ∮_C V·ds",
+        "page": 168,
+        "notes": "Circulation around a closed curve"
+      },
+      {
+        "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
+        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "year": 2018,
+        "publisher": "McGraw-Hill",
+        "equation_form": "Γ = ∮_C V·ds",
+        "page": 315,
+        "notes": "Relation to vorticity"
+      }
+    ],
+    "assumptions": [
+      "curve C is a closed path",
+      "velocity field V is continuous"
+    ],
+    "validity_range": "Any flow regime"
+  },
+  "kelvin_circulation_theorem": {
+    "equation": "dΓ/dt = 0 (inviscid, conservative body forces)",
+    "alternate_forms": [
+      "Γ = constant following a fluid particle"
+    ],
+    "sources": [
+      {
+        "title": "White - Fluid Mechanics, 8th Edition",
+        "authors": ["Frank M. White"],
+        "year": 2016,
+        "publisher": "McGraw-Hill",
+        "equation_form": "dΓ/dt = 0",
+        "page": 169,
+        "notes": "Kelvin's circulation theorem"
+      },
+      {
+        "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
+        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "year": 2018,
+        "publisher": "McGraw-Hill",
+        "equation_form": "dΓ/dt = 0",
+        "page": 316,
+        "notes": "For inviscid, conservative flows"
+      }
+    ],
+    "assumptions": [
+      "flow is inviscid",
+      "body forces are conservative (potential flow)",
+      "fluid particles are followed (Lagrangian)"
+    ],
+    "validity_range": "Inviscid flow with conservative body forces"
+  },
+  "vorticity_transport": {
+    "equation": "Dω/Dt = (ω·∇)V + ν∇²ω",
+    "alternate_forms": [
+      "∂ω/∂t + V·∇ω = (ω·∇)V + ν∇²ω (vector form)",
+      "Dω/Dt = ω(∇·V) - V × (∇ × ω) + ν∇²ω (general form)"
+    ],
+    "sources": [
+      {
+        "title": "White - Fluid Mechanics, 8th Edition",
+        "authors": ["Frank M. White"],
+        "year": 2016,
+        "publisher": "McGraw-Hill",
+        "equation_form": "Dω/Dt = (ω·∇)V + ν∇²ω",
+        "page": 172,
+        "notes": "Vorticity transport equation"
+      },
+      {
+        "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
+        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "year": 2018,
+        "publisher": "McGraw-Hill",
+        "equation_form": "Dω/Dt = (ω·∇)V + αν",
+        "page": 325,
+        "notes": "Vortex stretching and diffusion"
+      }
+    ],
+    "assumptions": [
+      "newtonian fluid",
+      "continuum hypothesis"
+    ],
+    "validity_range": "Turbulent and laminar flows"
+  },
+  "bernoulli_steady_inviscid": {
+    "equation": "p/γ + V²/2g + z = constant",
+    "alternate_forms": [
+      "p/ρ + V²/2 + gz = constant (per unit mass)",
+      "p/ρ*g + V²/(2g) + z = constant (head form)"
+    ],
+    "sources": [
+      {
+        "title": "White - Fluid Mechanics, 8th Edition",
+        "authors": ["Frank M. White"],
+        "year": 2016,
+        "publisher": "McGraw-Hill",
+        "equation_form": "p/γ + V²/2g + z = constant",
+        "page": 187,
+        "notes": "Energy form per unit weight"
+      },
+      {
+        "title": "Munson et al. - Fundamentals of Fluid Mechanics, 8th Edition",
+        "authors": ["Bruce R. Munson", "Theodore H. Okiishi", "Wade W. Huebsch", "Alric P. Rothmayer"],
+        "year": 2016,
+        "publisher": "Wiley",
+        "equation_form": "p/γ + V²/(2g) + z = constant",
+        "page": 201,
+        "notes": "Head form for engineering applications"
+      },
+      {
+        "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
+        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "year": 2018,
+        "publisher": "McGraw-Hill",
+        "equation_form": "p/ρ + V²/2 + gz = constant",
+        "page": 245,
+        "notes": "Both forms shown with limitations clearly stated"
+      }
+    ],
+    "assumptions": [
+      "steady flow",
+      "inviscid (no friction losses)",
+      "incompressible flow",
+      "along a streamline",
+      "no shaft work",
+      "no heat transfer"
+    ],
+    "limitations": [
+      "Not valid across streamlines in rotational flow",
+      "Not valid in boundary layers (viscous effects)",
+      "Not valid for compressible flow at high Mach numbers",
+      "Does not account for pump/turbine work or heat addition"
+    ]
+  },
+  "bernoulli_streamline": {
+    "equation": "p₁/γ + V₁²/2g + z₁ = p₂/γ + V₂²/2g + z₂",
+    "alternate_forms": [
+      "p₁/ρ + V₁²/2 = p₂/ρ + V₂²/2 (horizontal, no losses)"
+    ],
+    "sources": [
+      {
+        "title": "White - Fluid Mechanics, 8th Edition",
+        "authors": ["Frank M. White"],
+        "year": 2016,
+        "publisher": "McGraw-Hill",
+        "equation_form": "p₁/γ + V₁²/2g + z₁ = p₂/γ + V₂²/2g + z₂",
+        "page": 188,
+        "notes": "Bernoulli along a streamline"
+      },
+      {
+        "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
+        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "year": 2018,
+        "publisher": "McGraw-Hill",
+        "equation_form": "p₁/γ + V₁²/2g + z₁ = p₂/γ + V₂²/2g + z₂",
+        "page": 246,
+        "notes": "Between any two points on a streamline"
+      }
+    ],
+    "assumptions": [
+      "steady flow",
+      "inviscid frictionless flow",
+      "incompressible",
+      "along a streamline"
+    ],
+    "validity_range": "Between any two points on same streamline"
+  },
+  "bernoulli_head_loss": {
+    "equation": "p₁/γ + V₁²/2g + z₁ = p₂/γ + V₂²/2g + z₂ + h_L",
+    "alternate_forms": [
+      "H = h_f + h_m (major + minor losses)"
+    ],
+    "sources": [
+      {
+        "title": "White - Fluid Mechanics, 8th Edition",
+        "authors": ["Frank M. White"],
+        "year": 2016,
+        "publisher": "McGraw-Hill",
+        "equation_form": "p₁/γ + V₁²/2g + z₁ = p₂/γ + V₂²/2g + z₂ + h_L",
+        "page": 189,
+        "notes": "Bernoulli with head loss"
+      },
+      {
+        "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
+        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "year": 2018,
+        "publisher": "McGraw-Hill",
+        "equation_form": "p₁/γ + V₁²/2g + z₁ = p₂/γ + V₂²/2g + z₂ + h_L",
+        "page": 365,
+        "notes": "Extended Bernoulli equation"
+      }
+    ],
+    "assumptions": [
+      "steady flow",
+      "incompressible",
+      "includes friction and minor losses"
+    ],
+    "validity_range": "With head loss accounted for"
+  },
+  "mechanical_energy_eq": {
+    "equation": "p/ρ + V²/2 + gz = constant (along streamline)",
+    "alternate_forms": [
+      "P/ρ + V²/2 + gz = b (Bernoulli constant)"
+    ],
+    "sources": [
+      {
+        "title": "White - Fluid Mechanics, 8th Edition",
+        "authors": ["Frank M. White"],
+        "year": 2016,
+        "publisher": "McGraw-Hill",
+        "equation_form": "p/ρ + V²/2 + gz = constant",
+        "page": 187,
+        "notes": "Energy per unit mass"
+      },
+      {
+        "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
+        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "year": 2018,
+        "publisher": "McGraw-Hill",
+        "equation_form": "p/ρ + V²/2 + gz = constant",
+        "page": 245,
+        "notes": "Basics of mechanical energy conservation"
+      }
+    ],
+    "assumptions": [
+      "steady, incompressible, inviscid flow",
+      "along a streamline"
+    ],
+    "validity_range": "Theoretical ideal flow"
+  },
+  "bernoulli_unsteady": {
+    "equation": "∂φ/∂t + p/ρ + V²/2 + gz = constant",
+    "alternate_forms": [
+      "Unsteady Bernoulli equation with time-dependent potential"
+    ],
+    "sources": [
+      {
+        "title": "White - Fluid Mechanics, 8th Edition",
+        "year": 2016,
+        "publisher": "McGraw-Hill",
+        "equation_form": "∂φ/∂t + p/ρ + V²/2 + gz = constant",
+        "page": 190,
+        "notes": "Unsteady Bernoulli equation"
+      },
+      {
+        "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
+        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "year": 2018,
+        "publisher": "McGraw-Hill",
+        "equation_form": "∂φ/∂t + p/ρ + V²/2 + gz = constant",
+        "page": 352,
+        "notes": "For unsteady inviscid flow"
+      }
+    ],
+    "assumptions": [
+      "inviscid flow",
+      "irrotational flow (ω = 0)",
+      "incompressible"
+    ],
+    "validity_range": "Unsteady potential flow"
+  },
+  "darcy_weisbach": {
+    "equation": "ΔP = f * (L/D) * (ρ * V² / 2)",
+    "alternate_forms": [
+      "h_f = f * (L/D) * (V² / (2g)) (head loss form)"
+    ],
+    "sources": [
+      {
+        "title": "White - Fluid Mechanics, 8th Edition",
+        "authors": ["Frank M. White"],
+        "year": 2016,
+        "publisher": "McGraw-Hill",
+        "equation_form": "ΔP = f * (L/D) * (ρ * V² / 2)",
+        "page": 342,
+        "notes": "Darcy-Weisbach equation for pipe friction loss"
+      },
+      {
+        "title": "Moody - Friction Factors for Pipe Flow",
+        "authors": ["L. F. Moody"],
+        "year": 1944,
+        "publisher": "ASME Transactions",
+        "equation_form": "h_f = f * (L/D) * (V² / (2g))",
+        "page": 671,
+        "notes": "Original Moody chart paper, head loss form"
+      },
+      {
+        "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
+        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "year": 2018,
+        "publisher": "McGraw-Hill",
+        "equation_form": "ΔP = f * (L/D) * (ρ * V² / 2)",
+        "page": 389,
+        "notes": "Pressure drop form with Darcy friction factor"
+      }
+    ],
+    "assumptions": [
+      "steady, incompressible flow",
+      "fully developed flow",
+      "constant cross-section circular pipe",
+      "constant friction factor along pipe length",
+      "negligible entrance/exit effects"
+    ],
+    "friction_factor_correlations": {
+      "laminar": "f = 64 / Re",
+      "turbulent_smooth": "Blasius: f = 0.316 / Re^0.25 (Re < 10^5)",
+      "turbulent_rough": "Colebrook-White implicit equation",
+      "moody_chart": "Graphical solution for all regimes"
+    },
+  "fanning_friction_factor": {
+    "equation": "τ_w = f_F (ρ * V² / 2)",
+    "alternate_forms": [
+      "τ_w = f_F * q (where q = dynamic pressure)"
+    ],
+    "sources": [
+      {
+        "title": "White - Fluid Mechanics, 8th Edition",
+        "authors": ["Frank M. White"],
+        "year": 2016,
+        "publisher": "McGraw-Hill",
+        "equation_form": "τ_w = f_F (ρ * V² / 2)",
+        "page": 62,
+        "notes": "Wall shear stress with Fanning friction factor"
+      },
+      {
+        "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
+        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "year": 2018,
+        "publisher": "McGraw-Hill",
+        "equation_form": "τ_w = f_F * (ρ * V² / 2)",
+        "page": 225,
+        "notes": "Fanning friction factor definition"
+      }
+    ],
+    "assumptions": [
+      "steady, fully developed pipe flow",
+      "Newtonian fluid",
+      "horizontal pipe (no elevation change)"
+    ],
+    "relation_to_darcy": "f_D = 4 * f_F (Darcy friction factor is 4× Fanning)",
+  "hagen_poiseuille": {
+    "equation": "Q = π * Δp * r⁴ / (8 * μ * L)",
+    "alternate_forms": [
+      "Q = π * Δp * D⁴ / (128 * μ * L) (using diameter instead of radius)"
+    ],
+    "sources": [
+      {
+        "title": "White - Fluid Mechanics, 8th Edition",
+        "authors": ["Frank M. White"],
+        "year": 2016,
+        "publisher": "McGraw-Hill",
+        "equation_form": "Q = π * Δp * r⁴ / (8 * μ * L)",
+        "page": 515,
+        "notes": "Hagen-Poiseuille law for laminar pipe flow"
+      },
+      {
+        "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
+        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "year": 2018,
+        "publisher": "McGraw-Hill",
+        "equation_form": "Q = π * Δp * R⁴ / (8 * μ * L)",
+        "page": 355,
+        "notes": "Volume flow rate for laminar flow"
+      }
+    ],
+    "assumptions": [
+      "laminar flow (Re < 2300)",
+      "horizontal circular pipe",
+      "constant fluid properties",
+      "no slip at pipe wall"
+    ],
+    "parameters": {
+      "Q": "volume flow rate (m³/s)",
+      "Δp": "pressure difference (Pa)",
+      "r": "pipe radius (m)",
+      "R": "pipe radius (m)",
+      "L": "pipe length (m)",
+      "μ": "dynamic viscosity (Pa·s)"
+    }
+  },
+  "laminar_friction_factor": {
+    "equation": "f_D = 64 / Re (circular pipes)",
+    "alternate_forms": [
+      "f_F = 16 / Re (Fanning friction factor for laminar flow)"
+    ],
+    "sources": [
+      {
+        "title": "White - Fluid Mechanics, 8th Edition",
+        "authors": ["Frank M. White"],
+        "year": 2016,
+        "publisher": "McGraw-Hill",
+        "equation_form": "f_D = 64 / Re",
+        "page": 130,
+        "notes": "Friction factor for laminar flow in circular pipes"
+      },
+      {
+        "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
+        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "year": 2018,
+        "publisher": "McGraw-Hill",
+        "equation_form": "f = 64 / Re",
+        "page": 233,
+        "notes": "Friction factor for circular pipes"
+      }
+    ],
+    "assumptions": [
+      "fully developed laminar flow",
+      "circular cross-section pipe",
+      "Re < 2300"
+    ],
+    "relation": "Derived from Hagen-Poiseuille law"
+  },
+  "entrance_length_laminar": {
+    "equation": "L_e ≈ 0.06 * Re * D (laminar flow)",
+    "alternate_forms": [
+      "L_e ≈ 0.06 * Re * D (entry length for laminar flow)"
+    ],
+    "sources": [
+      {
+        "title": "White - Fluid Mechanics, 8th Edition",
+        "authors": ["Frank M. White"],
+        "year": 2016,
+        "publisher": "McGraw-Hill",
+        "equation_form": "L_e ≈ 0.06 * Re * D",
+        "page": 552,
+        "notes": "Entrance length for laminar flow"
+      },
+      {
+        "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
+        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "year": 2018,
+        "publisher": "McGraw-Hill",
+        "equation_form": "L_entry ≈ 0.06 * Re * D",
+        "page": 385,
+        "notes": "Hydrodynamic entry length"
+      }
+    ],
+    "assumptions": [
+      "fully developed flow upstream",
+      " laminar flow (Re < 2300)",
+      "circular pipe"
+    ],
+    "definition": "Distance from pipe inlet to fully developed flow"
+  },
+  "major_minor_losses": {
+    "equation": "h_L = h_f + h_m (friction + minor losses)",
+    "alternate_forms": [
+      "h_L = Δp/(ρg) + ΣK(V²/(2g)) (head loss form)"
+    ],
+    "sources": [
+      {
+        "title": "White - Fluid Mechanics, 8th Edition",
+        "authors": ["Frank M. White"],
+        "year": 2016,
+        "publisher": "McGraw-Hill",
+        "equation_form": "h_L = h_f + h_m",
+        "page": 64,
+        "notes": "Total head loss as sum of friction and minor losses"
+      },
+      {
+        "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
+        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "year": 2018,
+        "publisher": "McGraw-Hill",
+        "equation_form": "h_L = h_f + h_m",
+        "page": 365,
+        "notes": "Major and minor losses in pipe systems"
+      }
+    ],
+    "assumptions": [
+      "steady, incompressible flow",
+      "pipe system with fittings and valves"
+    ],
+    "components": {
+      "h_f": "friction loss (major loss)",
+      "h_m": "minor loss (fittings, valves, bends)",
+      "h_L": "total head loss"
+    },
+  "minor_loss_equation": {
+    "equation": "h_K = K * (V² / (2g)) (loss coefficient method)",
+    "alternate_forms": [
+      "h_L = K * V² / (2g) (for single fitting)"
+    ],
+    "sources": [
+      {
+        "title": "White - Fluid Mechanics, 8th Edition",
+        "authors": ["Frank M. White"],
+        "year": 2016,
+        "publisher": "McGraw-Hill",
+        "equation_form": "h_K = K * V² / (2g)",
+        "page": 65,
+        "notes": "Minor loss using loss coefficient"
+      },
+      {
+        "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
+        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "year": 2018,
+        "publisher": "McGraw-Hill",
+        "equation_form": "h_L = K * V² / (2g)",
+        "page": 370,
+        "notes": "Loss coefficient method for minor losses"
+      }
+    ],
+    "assumptions": [
+      "localized flow disturbance",
+      "minor fitting (elbow, valve, contraction, expansion)"
+    ],
+    "loss_coefficients": {
+      "entry": "K ≈ 0.5 (pipe entrance, sharp-edged)",
+      "exit": "K ≈ 1.0 (pipe exit, submerged)",
+      "90_debend": "K ≈ 0.9 (standard elbow, r/d=1)",
+      "gate_valve": "K ≈ 0.15 (fully open gate valve)",
+      "globe_valve": "K ≈ 10 (globe valve, fully open)"
+    },
+  "flow_regime_transition": {
+    "equation": "Re_crit ≈ 2300 (pipe flow)",
+    "alternate_forms": [
+      "2300 ≤ Re ≤ 4000: transitional flow",
+      "Re > 4000: turbulent flow"
+    ],
+    "sources": [
+      {
+        "title": "White - Fluid Mechanics, 8th Edition",
+        "authors": ["Frank M. White"],
+        "year": 2016,
+        "publisher": "McGraw-Hill",
+        "equation_form": "Re_crit ≈ 2300",
+        "page": 127,
+        "notes": "Critical Reynolds number for pipe flow"
+      },
+      {
+        "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
+        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "year": 2018,
+        "publisher": "McGraw-Hill",
+        "equation_form": "Re_crit ≈ 2300",
+        "page": 322,
+        "notes": "Transition from laminar to turbulent"
+      }
+    ],
+    "assumptions": [
+      "circular pipe",
+      "smooth walls",
+      "steady flow"
+    ],
+    "flow_regimes": {
+      "laminar": "Re < 2300",
+      "transitional": "2300 ≤ Re ≤ 4000",
+      "turbulent": "Re > 4000"
+    },
+  "hydraulic_diameter": {
+    "equation": "D_h = 4 * A_c / P_wetted",
+    "alternate_forms": [
+      "D_h = 4A / S (for non-circular ducts)"
+    ],
+    "sources": [
+      {
+        "title": "White - Fluid Mechanics, 8th Edition",
+        "authors": ["Frank M. White"],
+        "year": 2016,
+        "publisher": "McGraw-Hill",
+        "equation_form": "D_h = 4A_c / P_wetted",
+        "page": 95,
+        "notes": "Hydraulic diameter for non-circular conduits"
+      },
+      {
+        "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
+        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "year": 2018,
+        "publisher": "McGraw-Hill",
+        "equation_form": "D_h = 4A / P",
+        "page": 142,
+        "notes": "Used for non-circular cross-sections"
+      }
+    ],
+    "assumptions": [
+      "non-circular cross-section",
+      "equivalent diameter for flow analysis"
+    ],
+    "definition": "Diameter of a circular pipe that would give the same flow characteristics",
+    "parameters": {
+      "D_h": "hydraulic diameter (m)",
+      "A_c": "cross-sectional area (m²)",
+      "P_wetted": "wetted perimeter (m)"
+    },
+  "colebrook_white": {
+    "equation": "1/√f = -2 log₁₀[(ε/D)/3.7 + 6.9/Re] (implicit)",
+    "alternate_forms": [
+      "1/√f = -2 log10(ε/(3.7D) + 6.9/Re) (standard form)"
+    ],
+    "sources": [
+      {
+        "title": "White - Fluid Mechanics, 8th Edition",
+        "authors": ["Frank M. White"],
+        "year": 2016,
+        "publisher": "McGraw-Hill",
+        "equation_form": "1/√f = -2 log₁₀[(ε/D)/3.7 + 6.9/Re]",
+        "page": 68,
+        "notes": "Implicit equation for friction factor"
+      },
+      {
+        "title": "Moody - Friction Factors for Pipe Flow",
+        "authors": ["L. F. Moody"],
+        "year": 1944,
+        "publisher": "ASME Transactions",
+        "equation_form": "1/√f = -2 log10(ε/(3.7D) + 6.9/Re)",
+        "page": 671,
+        "notes": "Original presentation of friction factor equation"
+      }
+    ],
+    "assumptions": [
+      "turbulent flow (Re > 4000)",
+      "commercial pipe roughness",
+      "fully developed flow"
+    ],
+    "application": "Solve iteratively for friction factor f given ε, D, and Re",
+    "note": "Cannot be solved explicitly; requires numerical method or Moody chart"
+  },
+  "swamee_jain": {
+    "equation": "f = 0.25 / [-log₁₀(ε/(3.7D) + 5.74/Re^0.9)]^2 (explicit)",
+    "alternate_forms": [
+      "f = 0.25 / (log10(ε/(3.7D) + 5.74/Re^0.9))^2 * 0.25"
+    ],
+    "sources": [
+      {
+        "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
+        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "year": 2018,
+        "publisher": "McGraw-Hill",
+        "equation_form": "f = 0.25 / [-log10(ε/(3.7D) + 5.74/Re^0.9)]^2",
+        "page": 237,
+        "notes": "Explicit approximation to Colebrook-White equation"
+      }
+    ],
+    "assumptions": [
+      "turbulent flow (10^(-1) < Re < 10^8)",
+      "commercial steel or wrought iron pipe (ε ≈ 0.046 mm)",
+      "smooth to moderately rough pipes"
+    ],
+    "validity_range": "10^(-1) < Re < 10^8, 10^(-6) < ε/D < 10^(-2)",
+    "advantage": "Explicit formula - no iteration required unlike Colebrook-White"
+  },
+  "prandtl_mixing_length": {
+    "equation": "l = κ * y (log law layer)",
+    "alternate_forms": [
+      "l⁺ = y⁺ (inner layer)",
+      "l⁺ = κ * y⁺ (outer layer)"
+    ],
+    "sources": [
+      {
+        "title": "White - Fluid Mechanics, 8th Edition",
+        "authors": ["Frank M. White"],
+        "year": 2016,
+        "publisher": "McGraw-Hill",
+        "equation_form": "l = κ * y",
+        "page": 78,
+        "notes": "Prandtl's mixing length theory"
+      },
+      {
+        "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
+        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "year": 2018,
+        "publisher": "McGraw-Hill",
+        "equation_form": "l = κ * y",
+        "page": 326,
+        "notes": "Mixing length in turbulent flow"
+      }
+    ],
+    "assumptions": [
+      "fully developed turbulent flow",
+      "stationary mean flow",
+      "homogeneous turbulence"
+    ],
+    "parameters": {
+      "l": "mixing length (m)",
+      "κ": "von Kármán constant ≈ 0.41",
+      "y": "distance from wall (m)"
+    },
+    "theory": "Relates eddy size to distance from wall in turbulent boundary layer",
+  "law_of_wall_viscous_sublayer": {
+    "equation": "u⁺ = y⁺ (y⁺ < 5)",
+    "alternate_forms": [
+      "u⁺ = y⁺ (viscous sublayer, inner region)"
+    ],
+    "sources": [
+      {
+        "title": "White - Fluid Mechanics, 8th Edition",
+        "authors": ["Frank M. White"],
+        "year": 2016,
+        "publisher": "McGraw-Hill",
+        "equation_form": "u⁺ = y⁺",
+        "page": 73,
+        "notes": "Viscous sublayer law of the wall"
+      },
+      {
+        "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
+        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "year": 2018,
+        "publisher": "McGraw-Hill",
+        "equation_form": "u⁺ = y⁺",
+        "page": 321,
+        "notes": "Linear region near wall"
+      }
+    ],
+    "assumptions": [
+      "y⁺ < 5 (viscous sublayer)",
+      "steady, turbulent flow",
+      "no-slip at wall boundary"
+    ],
+    "definition": "u⁺ = u/uτ (dimensionless velocity), y⁺ = y*uτ/ν (dimensionless distance)",
+    "parameters": {
+      "u⁺": "dimensionless velocity u/uτ",
+      "y⁺": "dimensionless distance y*uτ/ν",
+      "uτ": "friction velocity √(τ_w/ρ)"
+    }
+  },
+  "law_of_wall_viscous_sublayer": {
+    "equation": "u⁺ = y⁺ (y⁺ < 5)",
+    "alternate_forms": [
+      "u⁺ = y⁺ (viscous sublayer, inner region)"
+    ],
+    "sources": [
+      {
+        "title": "White - Fluid Mechanics, 8th Edition",
+        "year": 2016,
+        "publisher": "McGraw-Hill",
+        "equation_form": "u⁺ = y⁺",
+        "page": 73,
+        "notes": "Viscous sublayer law of the wall"
+      },
+      {
+        "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
+        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "year": 2018,
+        "publisher": "McGraw-Hill",
+        "equation_form": "u⁺ = y⁺",
+        "page": 321,
+        "notes": "Linear region near wall"
+      }
+    ],
+    "assumptions": [
+      "y⁺ < 5 (viscous sublayer)",
+      "steady, turbulent flow",
+      "no-slip at wall boundary"
+    ],
+    "definition": "u⁺ = u/uτ (dimensionless velocity), y⁺ = y*uτ/ν (dimensionless distance)",
+    "parameters": {
+      "u⁺": "dimensionless velocity u/uτ",
+      "y⁺": "dimensionless distance y*uτ/ν",
+      "uτ": "friction velocity √(τ_w/ρ)"
+    }
+  },
+  "law_of_wall_loglaw": {
+    "equation": "u⁺ = (1/κ) ln(y⁺) + B, κ ≈ 0.41, B ≈ 5.2",
+    "alternate_forms": [
+      "u⁺ = 2.5 ln(y⁺) + 5.5 (alternative form with adjusted constants)"
+    ],
+    "sources": [
+      {
+        "title": "White - Fluid Mechanics, 8th Edition",
+        "year": 2016,
+        "publisher": "McGraw-Hill",
+        "equation_form": "u⁺ = (1/κ) ln(y⁺) + B, κ ≈ 0.41, B ≈ 5.2",
+        "page": 74,
+        "notes": "Logarithmic law of the wall"
+      },
+      {
+        "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
+        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "year": 2018,
+        "publisher": "McGraw-Hill",
+        "equation_form": "u⁺ = (1/κ) ln(y⁺) + B",
+        "page": 322,
+        "notes": "Logarithmic region of boundary layer"
+      }
+    ],
+    "assumptions": [
+      "30 < y⁺ < 0.1 * Re_δ (logarithmic region)",
+      "fully developed turbulent flow",
+      "prismatic (stationary) mean flow"
+    ],
+    "definition": "u⁺ = u/uτ (dimensionless velocity), y⁺ = y*uτ/ν (dimensionless distance)",
+    "parameters": {
+      "u⁺": "dimensionless velocity u/uτ",
+      "y⁺": "dimensionless distance y*uτ/ν",
+      "κ": "von Kármán constant ≈ 0.41",
+      "B": " additive constant ≈ 5.2",
+      "uτ": "friction velocity √(τ_w/ρ)"
+    },
+    "application": "Valid for the log-law region of turbulent boundary layers"
+  },
+  "mach_number": {
+    "equation": "M = V / a (ratio of flow speed to speed of sound)",
+    "alternate_forms": [
+      "M = V / √(γ * R * T)",
+      "M = √(2 / (γ - 1) * [(p0/p)^((γ-1)/γ) - 1]) (isentropic flow)"
+    ],
+    "sources": [
+      {
+        "title": "White - Fluid Mechanics, 8th Edition",
+        "authors": ["Frank M. White"],
+        "year": 2016,
+        "publisher": "McGraw-Hill",
+        "equation_form": "M = V / a",
+        "page": 145,
+        "notes": "Mach number definition"
+      },
+      {
+        "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
+        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "year": 2018,
+        "publisher": "McGraw-Hill",
+        "equation_form": "M = V / a",
+        "page": 310,
+        "notes": "Dimensionless velocity parameter"
+      }
+    ],
+    "assumptions": [
+      "fluid behaves as ideal gas",
+      "speed of sound a is well-defined"
+    ],
+    "flow_regimes": {
+      "subsonic": "M < 1",
+      "sonic": "M = 1",
+      "supersonic": "M > 1",
+      "hypersonic": "M > 5"
+    },
+  "speed_of_sound": {
+    "equation": "a = √(γ * R * T)",
+    "alternate_forms": [
+      "a = √(γ * p / ρ) (using ideal gas law)",
+      "a = √(k * R * T) (where k = specific heat ratio γ)"
+    ],
+    "sources": [
+      {
+        "title": "White - Fluid Mechanics, 8th Edition",
+        "authors": ["Frank M. White"],
+        "year": 2016,
+        "publisher": "McGraw-Hill",
+        "equation_form": "a = √(γ * R * T)",
+        "page": 145,
+        "notes": "Speed of sound in ideal gas"
+      },
+      {
+        "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
+        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "year": 2018,
+        "publisher": "McGraw-Hill",
+        "equation_form": "a = √(γ * R * T)",
+        "page": 311,
+        "notes": "Characteristic velocity of sound"
+      }
+    ],
+    "assumptions": [
+      "ideal gas behavior",
+      "homogeneous medium",
+      "no heat transfer in sound wave propagation"
+    ],
+    "parameters": {
+      "a": "speed of sound (m/s)",
+      "γ": "specific heat ratio cp/cv",
+      "R": "gas constant (J/kg·K)",
+      "T": "absolute temperature (K)"
+    },
+  "isentropic_relations": {
+    "equation": "p/p0 = (T/T0)^(γ/(γ-1)) = (ρ/ρ0)^γ",
+    "alternate_forms": [
+      "T/T0 = (p/p0)^((γ-1)/γ)",
+      "ρ/ρ0 = (p/p0)^(1/γ)"
+    ],
+    "sources": [
+      {
+        "title": "White - Fluid Mechanics, 8th Edition",
+        "authors": ["Frank M. White"],
+        "year": 2016,
+        "publisher": "McGraw-Hill",
+        "equation_form": "p/p0 = (T/T0)^(γ/(γ-1))",
+        "page": 155,
+        "notes": "Isentropic relations for ideal gas"
+      },
+      {
+        "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
+        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "year": 2018,
+        "publisher": "McGraw-Hill",
+        "equation_form": "p/p0 = (T/T0)^(γ/(γ-1)) = (ρ/ρ0)^γ",
+        "page": 313,
+        "notes": "Four equivalent forms of isentropic relations"
+      }
+    ],
+    "assumptions": [
+      "reversible (isentropic) process",
+      "ideal gas with constant specific heats",
+      "steady, adiabatic, frictionless flow"
+    ],
+    "related_quantities": {
+      "p": "pressure",
+      "p0": "stagnation pressure",
+      "T": "temperature",
+      "T0": "stagnation temperature",
+      "ρ": "density",
+      "ρ0": "stagnation density"
+    },
+  "isentropic_area_mach": {
+    "equation": "A/A* = (1/M) [(2/(γ+1)) (1 + (γ-1)/2 M²)]^((γ+1)/(2(γ-1)))",
+    "alternate_forms": [
+      "A/A* = (1/M) * ((2 + (γ-1)M²)/(γ+1))^((γ+1)/(2(γ-1)))"
+    ],
+    "sources": [
+      {
+        "title": "White - Fluid Mechanics, 8th Edition",
+        "authors": ["Frank M. White"],
+        "year": 2016,
+        "publisher": "McGraw-Hill",
+        "equation_form": "A/A* = (1/M) [(2/(γ+1)) (1 + (γ-1)/2 M²)]^((γ+1)/(2(γ-1)))",
+        "page": 160,
+        "notes": "Area-Mach number relation for isentropic flow"
+      },
+      {
+        "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
+        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "year": 2018,
+        "publisher": "McGraw-Hill",
+        "equation_form": "A/A* = (1/M) [(2/(γ+1)) (1 + (γ-1)/2 M²)]^((γ+1)/(2(γ-1)))",
+        "page": 320,
+        "notes": "Ratio of area to throat area"
+      }
+    ],
+    "assumptions": [
+      "isentropic flow (adiabatic, reversible)",
+      "ideal gas with constant specific heats",
+      "one-dimensional flow"
+    ],
+    "critical_condition": "M = 1 at A = A* (throat)",
+    "application": "Determine flow area for given Mach number in nozzles and diffusers"
+  },
+  "prandtl_meyer": {
+    "equation": "ν(M) = √((γ+1)/(γ-1)) arctan√((γ-1)/(γ+1)(M²-1)) - arctan√(M²-1)",
+    "alternate_forms": [
+      "ν(M) = √((γ+1)/(γ-1)) * tan⁻¹√((γ-1)/(γ+1)(M²-1)) - tan⁻¹√(M²-1)",
+      "θ = ν(M₂) - ν(M₁) (turning angle for expansion fan)"
+    ],
+    "sources": [
+      {
+        "title": "White - Fluid Mechanics, 8th Edition",
+        "authors": ["Frank M. White"],
+        "year": 2016,
+        "publisher": "McGraw-Hill",
+        "equation_form": "ν(M) = √((γ+1)/(γ-1)) arctan√((γ-1)/(γ+1)(M²-1)) - arctan√(M²-1)",
+        "page": 163,
+        "notes": "Prandtl-Meyer function for expansion fans"
+      },
+      {
+        "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
+        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "year": 2018,
+        "publisher": "McGraw-Hill",
+        "equation_form": "ν(M) = √((γ+1)/(γ-1)) arctan√((γ-1)/(γ+1)(M²-1)) - arctan√(M²-1)",
+        "page": 335,
+        "notes": "Angle through which flow expands"
+      }
+    ],
+    "assumptions": [
+      "isentropic expansion",
+      "ideal gas with constant specific heats",
+      "M > 1 (supersonic flow)"
+    ],
+    "definition": "Prandtl-Meyer function gives the maximum turning angle",
+    "parameters": {
+      "ν(M)": "Prandtl-Meyer function value (radians)",
+      "M": "Mach number (> 1)",
+      "γ": "specific heat ratio"
+    },
+    "application": "Determine expansion fan turning angle for supersonic flow turning"
+  }
+}
+    "equation": "L_e ≈ 4.4 * Re^(1/6) * D (turbulent flow)",
+    "alternate_forms": [
+      "L_e ≈ 10 * D (practical rule of thumb for turbulent)"
+    ],
+    "sources": [
+      {
+        "title": "White - Fluid Mechanics, 8th Edition",
+        "authors": ["Frank M. White"],
+        "year": 2016,
+        "publisher": "McGraw-Hill",
+        "equation_form": "L_e ≈ 4.4 * Re^(1/6) * D",
+        "page": 552,
+        "notes": "Entrance length for turbulent flow"
+      },
+      {
+        "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
+        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "year": 2018,
+        "publisher": "McGraw-Hill",
+        "equation_form": "L_entry ≈ 4.4 * Re^(1/6) * D",
+        "page": 385,
+        "notes": "Turbulent entry length"
+      }
+    ],
+    "assumptions": [
+      "fully developed flow upstream",
+      "turbulent flow (Re > 4000)",
+      "circular pipe"
+    ],
+    "definition": "Distance from pipe inlet to fully developed flow"
   }
 }

@@ -20,6 +20,32 @@ from units import get_dimensions, check_dimensionless
 
 # Standard variable dimensions (SI base: L, M, T, Θ, N, I, J)
 # L=length, M=mass, T=time, Θ=temperature, N=amount, I=current, J=luminous
+#
+# FALLBACK_VARIABLES: When a variable is not found in VARIABLE_DIMENSIONS,
+# this map provides dimensions based on the "base" variable name. For example:
+# "mu_t" (turbulent viscosity) falls back to "mu" (dynamic viscosity).
+# "epsilon_turb" (dissipation rate) falls back to "epsilon".
+# "k_turb" (turbulent kinetic energy) falls back to "k" (if added).
+# "C_D_0" falls back to "C_D".
+FALLBACK_VARIABLES = {
+    "mu_t": "mu",      # turbulent viscosity -> dynamic viscosity
+    "epsilon_turb": "epsilon",  # dissipation rate -> loss coefficient
+    "k_turb": None,    # turbulent kinetic energy (would need "k" added)
+    "C_D_0": "C_D",    # zero-lift drag -> drag coefficient
+    "CL_max": "C_L",   # max lift -> lift coefficient
+}
+
+# Map base variable names to their dimension keys for fallback lookup
+VARIABLE_BASE_MAP = {
+    "mu_t": "mu",
+    "epsilon_turb": "epsilon",
+    "k_turb": "k",
+    "C_D_0": "C_D",
+    "CL_max": "C_L",
+}
+
+# Standard variable dimensions (SI base: L, M, T, Θ, N, I, J)
+# L=length, M=mass, T=time, Θ=temperature, N=amount, I=current, J=luminous
 VARIABLE_DIMENSIONS = {
     # Fluid properties
     "rho": {"M": 1, "L": -3},           # density kg/m³
@@ -42,6 +68,34 @@ VARIABLE_DIMENSIONS = {
     "T": {"Θ": 1},                      # temperature K
     "Cp": {"L": 2, "T": -2, "Θ": -1},   # specific heat J/(kg·K)
     "k": {"M": 1, "L": 1, "T": -3, "Θ": -1},  # thermal conductivity W/(m·K)
+    # Additional fluid dynamics variables
+    "sigma": {"M": 1, "T": -2},         # surface tension N/m = kg/s²
+    "r": {"L": 1},                      # radius m
+    "A_c": {"L": 2},                    # cross-sectional area m²
+    "P_wetted": {"L": 1},               # wetted perimeter m
+    "Q": {"L": 3, "T": -1},             # volume flow rate m³/s
+    "epsilon": {"L": 1},                # roughness height m
+    "V_theta": {"L": 1, "T": -1},       # tangential velocity m/s
+    "U": {"L": 1, "T": -1},             # speed m/s
+    "omega": {"T": -1},                 # angular velocity 1/s (rad/s)
+    "Gamma": {"L": 2, "T": -1},         # circulation m²/s
+    "delta": {"L": 1},                  # boundary layer thickness m
+    "y_plus": {},                       # dimensionless wall distance
+    "k_turb": {"L": 2, "T": -2},       # turbulent kinetic energy m²/s²
+    "epsilon_turb": {"L": 2, "T": -3}, # dissipation rate m²/s³
+    "mu_t": {"M": 1, "L": -1, "T": -1}, # turbulent viscosity Pa·s
+    "C_f": {},                          # skin friction coefficient (dimensionless)
+    "C_L": {},                          # lift coefficient (dimensionless)
+    "C_D": {},                          # drag coefficient (dimensionless)
+    "e": {},                            # span efficiency factor (dimensionless)
+    "alpha": {},                        # angle of attack (dimensionless)
+    "AR": {},                           # aspect ratio (dimensionless)
+    "b": {"L": 1},                      # wingspan m
+    "S": {"L": 2},                      # wing area m²
+    "FD": {"M": 1, "L": 1, "T": -2},   # drag force N = kg·m/s²
+    "FL": {"M": 1, "L": 1, "T": -2},   # lift force N = kg·m/s²
+    "CL_max": {},                       # max lift coefficient (dimensionless)
+    "CD_0": {},                         # zero-lift drag coefficient (dimensionless)
 }
 
 
@@ -190,11 +244,18 @@ def parse_equation(equation: str) -> Dict[str, int]:
                 var = tok
                 dims = VARIABLE_DIMENSIONS.get(var)
                 if dims is None:
-                    try:
-                        dims = get_dimensions(var)
-                    except Exception:
-                        dims = {}
-                        print(f"Warning: Unknown variable '{var}', treating as dimensionless", file=sys.stderr)
+                    # Try fallback: check if there's a "base" variable version
+                    base_var = VARIABLE_BASE_MAP.get(var)
+                    if base_var and base_var in VARIABLE_DIMENSIONS:
+                        # Use the base variable's dimensions with a note
+                        dims = VARIABLE_DIMENSIONS[base_var]
+                        print(f"Note: Using dimensions for '{base_var}' as fallback for '{var}'", file=sys.stderr)
+                    else:
+                        try:
+                            dims = get_dimensions(var)
+                        except Exception:
+                            dims = {}
+                            print(f"Warning: Unknown variable '{var}', treating as dimensionless", file=sys.stderr)
                 return dims.copy() if dims else {}
 
     parser = Parser(tokens)
