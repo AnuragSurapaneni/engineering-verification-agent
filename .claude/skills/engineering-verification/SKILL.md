@@ -1,10 +1,32 @@
+---
+name: engineering-verification
+version: "1.0.0"
+description: "Engineering verification methodology with deterministic Python tools for dimensional analysis, unit conversion, numerical computation, and reference validation."
+author: "Engineering Verification Agent"
+tags: ["engineering", "verification", "fluid-mechanics", "dimensional-analysis"]
+requires:
+  - python3
+  - pip: pint
+---
+
 # Engineering Verification Skill
 
 ## Overview
 
-This skill defines a rigorous procedure for verifying engineering calculations. The agent orchestrates a 10-step verification workflow, calling deterministic Python tools for calculations, dimensional analysis, unit conversion, and comparison.
+This Skill provides a rigorous methodology for verifying engineering calculations. The agent orchestrates a 10-step verification workflow, calling deterministic Python tools for calculations, dimensional analysis, unit conversion, and comparison.
 
 **Key Principle**: Use the LLM for reasoning and orchestration; use deterministic software for calculations and checks.
+
+---
+
+## When to Use This Skill
+
+Use this Skill when you need to:
+- Verify an engineering calculation someone has presented
+- Check if a reported result is correct
+- Validate dimensional consistency of equations
+- Cross-check against authoritative references
+- Perform physical sanity checks on results
 
 ---
 
@@ -33,7 +55,7 @@ List all explicit and implicit assumptions:
 - Boundary conditions
 
 ### Step 4: Check Units
-Verify all input quantities have consistent units using the units abstraction layer (`scripts/units.py`).
+Verify all input quantities have consistent units using the units abstraction layer (`scripts/units.py`):
 - Convert all inputs to a consistent unit system (SI preferred)
 - Flag any unit mismatches or missing units
 
@@ -94,7 +116,7 @@ Confidence: HIGH / MEDIUM / LOW
 
 ## Tool Invocation Patterns
 
-All tools are invoked via subprocess (CLI):
+All tools are invoked via subprocess (CLI) relative to the Skill directory:
 
 ```bash
 # Unit conversion
@@ -146,3 +168,76 @@ python scripts/compare.py --computed 135000 --reported 135000 --tolerance 0.01
 
 ### Reference Sources
 Stored in `references/fluid_mechanics/references.json` with structured format.
+
+---
+
+## Verify Command
+
+The Skill provides a `verify` command that can be invoked in two ways:
+
+### From Current Context
+When invoked during a conversation, the Skill uses the problem context from the conversation:
+
+```
+/skill engineering-verification verify
+```
+
+### From Input File
+When invoked with a problem file:
+
+```bash
+python scripts/verify.py --problem-file examples/reynolds_number.md
+```
+
+### Verify Command Options
+```
+python scripts/verify.py [OPTIONS]
+
+Options:
+  --problem-file FILE    Path to problem markdown file
+  --reported-value VAL   Reported result to verify against (optional)
+  --tolerance FLOAT      Relative tolerance for comparison (default: 0.01)
+  --output FORMAT        Output format: json, markdown, text (default: markdown)
+  --verbose              Verbose output
+```
+
+---
+
+## Example Prompts
+
+### Verify a Reynolds Number Calculation
+> "Verify this Reynolds number calculation: Air at 300K, 1 atm, velocity 20 m/s, pipe diameter 0.1 m. The reported result is Re = 127,000 (turbulent)."
+
+### Verify a Pressure Drop Calculation
+> "Check this pressure drop: Water at 300K, velocity 2 m/s, pipe diameter 0.05 m, length 10 m, friction factor 0.02. Reported ΔP = 7.98 kPa."
+
+### Verify a Bernoulli Calculation
+> "Verify this Bernoulli problem: Water at 300K, V₁=3 m/s, D₁=0.1 m, D₂=0.05 m, P₁=200 kPa. Reported P₂=130.2 kPa."
+
+---
+
+## Installation
+
+```bash
+# In your project root:
+mkdir -p .claude/skills
+cp -r /path/to/engineering-verification .claude/skills/
+pip install pint
+```
+
+Then reference in your CLAUDE.md or invoke directly:
+```
+/skill engineering-verification
+```
+
+---
+
+## Testing
+
+Run the test suite to validate the Skill works:
+
+```bash
+python scripts/test_runner.py
+```
+
+This runs all verification cases (PASS, FAIL, INSUFFICIENT_INFORMATION) for each supported equation.
