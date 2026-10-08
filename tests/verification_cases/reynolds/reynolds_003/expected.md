@@ -13,7 +13,7 @@ Cannot compute - missing dynamic viscosity (μ)
 - physical_interpretation: SKIPPED
 
 ## Expected Verdict
-INSUFFICIENT_INFORMATION
+INSUFFICIENT INFORMATION
 
 ## Required Information
 - dynamic viscosity (μ) or kinematic viscosity (ν) at 300 K, 1 atm

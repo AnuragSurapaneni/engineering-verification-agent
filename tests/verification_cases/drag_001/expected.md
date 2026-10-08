@@ -1,19 +1,13 @@
-# Expected Result - Drag 001 (PASS)
+# Expected Calculator Result - Drag (Calculator-only)
 
-## Expected Equation
+## Equation
+
 F_D = 0.5 * ρ * V² * A * C_D
 
-## Expected Approximate Result
-F_D ≈ 413.44 N (turbulent flow)
+## Expected Result
 
-## Required Checks
-- dimensional_consistency: PASS (F_D has units of Newtons)
-- numerical_calculation: PASS (0.5 * 1.225 * 30² * 2.5 * 0.3 = 13770.5625)
-- physical_interpretation: PASS (drag force opposes motion, positive value)
-- coefficient_consistency: PASS (C_D = 0.3 is reasonable for a car shape)
+F_D = 413.4375 N
 
-## Expected Verdict
-PASS
-
-## Expected Confidence
-MEDIUM
+The drag calculator can compute this result. This example is not part of the
+end-to-end verification suite because the reference database does not yet
+contain an independent drag-equation source entry.

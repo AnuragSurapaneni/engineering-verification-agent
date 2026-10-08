@@ -13,7 +13,7 @@ Cannot compute - missing density (ρ)
 - physical_sanity: SKIPPED
 
 ## Expected Verdict
-INSUFFICIENT_INFORMATION
+INSUFFICIENT INFORMATION
 
 ## Required Information
 - Fluid density (ρ) at 300 K

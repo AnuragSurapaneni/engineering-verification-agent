@@ -1,12 +1,11 @@
 ---
 name: engineering-verification
-version: "1.0.0"
 description: "Engineering verification methodology with deterministic Python tools for dimensional analysis, unit conversion, numerical computation, and reference validation."
-author: "Engineering Verification Agent"
-tags: ["engineering", "verification", "fluid-mechanics", "dimensional-analysis"]
-requires:
-  - python3
-  - pip: pint
+compatibility: "Requires Python 3 and the pint package."
+metadata:
+  version: "1.0.0"
+  author: "Engineering Verification Agent"
+  tags: "engineering, verification, fluid-mechanics, dimensional-analysis"
 ---
 
 # Engineering Verification Skill
@@ -116,7 +115,9 @@ Confidence: HIGH / MEDIUM / LOW
 
 ## Tool Invocation Patterns
 
-All tools are invoked via subprocess (CLI) relative to the Skill directory:
+The verifier invokes the canonical tools in the repository root `scripts/`
+directory. References and verification cases also live at the repository root;
+do not create skill-local copies.
 
 ```bash
 # Unit conversion
@@ -140,7 +141,7 @@ python scripts/compare.py --computed 135000 --reported 135000 --tolerance 0.01
 |---------|---------|
 | **VERIFIED** | All checks pass; independent calculation matches reported result within tolerance; high confidence |
 | **NOT VERIFIED** | One or more checks fail; calculation discrepancy; or physical sanity check fails |
-| **INSUFFICIENT INFORMATION** | Missing required inputs, properties, or assumptions prevent verification |
+| **INSUFFICIENT INFORMATION** | Required inputs, reported result, unit conversion, or reference data are unavailable |
 
 ---
 
@@ -148,23 +149,24 @@ python scripts/compare.py --computed 135000 --reported 135000 --tolerance 0.01
 
 | Level | Criteria |
 |-------|----------|
-| **HIGH** | All checks PASS, multiple references agree, result matches within tight tolerance |
-| **MEDIUM** | Most checks PASS, minor reference discrepancies, or wider tolerance needed |
-| **LOW** | Limited reference coverage, significant assumptions, or borderline physical sanity |
+| **HIGH** | All required checks pass and the reported result is within tolerance |
+| **MEDIUM** | Enough information to calculate, but the reported value or a check fails |
+| **LOW** | Required inputs, unit conversion, or reference data are unavailable |
 
 ---
 
-## Domain: Fluid Mechanics (Phase 1)
+## End-to-End Supported Problems
 
 ### Supported Equations
 1. **Reynolds Number**: `Re = ρVD/μ` — determines flow regime
 2. **Darcy-Weisbach Pressure Drop**: `ΔP = f(L/D)(ρV²/2)` — pipe friction loss
 3. **Bernoulli Equation**: Energy conservation along a streamline
+4. **Mach Number**: `M = V/a`
 
-### Required Fluid Properties (at given T, P)
-- Density (ρ)
-- Dynamic viscosity (μ)
-- Kinematic viscosity (ν = μ/ρ)
+The verifier requires a reported result to return VERIFIED. Without a reported
+result it returns INSUFFICIENT INFORMATION and includes the calculation when
+inputs are sufficient. Other calculator types are standalone and are not
+end-to-end verified yet.
 
 ### Reference Sources
 Stored in `references/fluid_mechanics/references.json` with structured format.
@@ -186,16 +188,17 @@ When invoked during a conversation, the Skill uses the problem context from the 
 When invoked with a problem file:
 
 ```bash
-python scripts/verify.py --problem-file examples/reynolds_number.md
+python .claude/skills/engineering-verification/scripts/verify.py \
+  --problem-file tests/verification_cases/reynolds/reynolds_001/problem.md
 ```
 
 ### Verify Command Options
 ```
-python scripts/verify.py [OPTIONS]
+python .claude/skills/engineering-verification/scripts/verify.py [OPTIONS]
 
 Options:
   --problem-file FILE    Path to problem markdown file
-  --reported-value VAL   Reported result to verify against (optional)
+  --reported-value VAL   Reported result in SI units (overrides the file)
   --tolerance FLOAT      Relative tolerance for comparison (default: 0.01)
   --output FORMAT        Output format: json, markdown, text (default: markdown)
   --verbose              Verbose output
@@ -212,16 +215,14 @@ Options:
 > "Check this pressure drop: Water at 300K, velocity 2 m/s, pipe diameter 0.05 m, length 10 m, friction factor 0.02. Reported ΔP = 7.98 kPa."
 
 ### Verify a Bernoulli Calculation
-> "Verify this Bernoulli problem: Water at 300K, V₁=3 m/s, D₁=0.1 m, D₂=0.05 m, P₁=200 kPa. Reported P₂=130.2 kPa."
+> "Verify this Bernoulli problem: Water at 300K, V₁=3 m/s, D₁=0.1 m, D₂=0.05 m, P₁=200 kPa. Reported P₂≈132.7 kPa."
 
 ---
 
 ## Installation
 
 ```bash
-# In your project root:
-mkdir -p .claude/skills
-cp -r /path/to/engineering-verification .claude/skills/
+# Install the runtime dependency from the project root:
 pip install pint
 ```
 
@@ -237,7 +238,8 @@ Then reference in your CLAUDE.md or invoke directly:
 Run the test suite to validate the Skill works:
 
 ```bash
-python scripts/test_runner.py
+python .claude/skills/engineering-verification/scripts/test_runner.py
 ```
 
-This runs all verification cases (PASS, FAIL, INSUFFICIENT_INFORMATION) for each supported equation.
+This runs the 10 end-to-end cases for supported equations. The drag example is
+calculator-only until it has an independent reference entry.

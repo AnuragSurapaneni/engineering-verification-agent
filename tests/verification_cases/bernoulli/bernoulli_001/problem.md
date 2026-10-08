@@ -16,4 +16,4 @@ Water flows through a horizontal pipe that changes diameter. At point 1, the pip
 **Task:** Calculate the pressure at point 2 (P₂) using the Bernoulli equation with continuity.
 
 ## Reported Result
-P₂ = 130,206 Pa (130.2 kPa)
+P₂ = 132,702.5 Pa (132.7 kPa)

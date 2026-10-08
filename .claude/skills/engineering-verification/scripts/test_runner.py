@@ -1,229 +1,172 @@
 #!/usr/bin/env python3
-"""
-Test runner for engineering-verification Skill.
+"""Run the checked-in end-to-end verification cases."""
 
-Runs all verification cases and reports results.
-
-Usage:
-    python test_runner.py
-    python test_runner.py --verbose
-    python test_runner.py --case reynolds_001
-"""
-
-import sys
-import json
 import argparse
+import json
 import subprocess
+import sys
 from pathlib import Path
-from typing import Dict, Any, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
-SKILL_DIR = Path(__file__).parent.parent
-SCRIPTS_DIR = SKILL_DIR / "scripts"
-TESTS_DIR = SKILL_DIR / "tests" / "verification_cases"
+
+REPOSITORY_ROOT = Path(__file__).resolve().parents[4]
+VERIFY_SCRIPT = Path(__file__).resolve().with_name("verify.py")
+TESTS_DIR = REPOSITORY_ROOT / "tests" / "verification_cases"
+SUPPORTED_DOMAINS = {"reynolds", "pressure_drop", "bernoulli"}
+SUPPORTED_ROOT_CASES = {"mach_001"}
+VERDICT_ALIASES = {
+    "PASS": "VERIFIED",
+    "FAIL": "NOT VERIFIED",
+    "INSUFFICIENT_INFORMATION": "INSUFFICIENT INFORMATION",
+}
 
 
 class TestRunner:
-    """Runs verification test cases."""
-
     def __init__(self, verbose: bool = False):
         self.verbose = verbose
-        self.results = []
+        self.results: List[Dict[str, Any]] = []
 
-    def run_verify(self, problem_file: Path, reported_value: Optional[float] = None) -> Dict[str, Any]:
-        """Run verify.py on a problem file."""
-        cmd = [
+    def run_verify(self, problem_file: Path) -> Dict[str, Any]:
+        command = [
             sys.executable,
-            str(SCRIPTS_DIR / "verify.py"),
+            str(VERIFY_SCRIPT),
             "--problem-file", str(problem_file),
-            "--output", "json"
+            "--output", "json",
         ]
-        if reported_value is not None:
-            cmd.extend(["--reported-value", str(reported_value)])
-
         try:
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
-            if result.returncode == 0:
-                return json.loads(result.stdout)
-            else:
-                return {"error": result.stderr, "returncode": result.returncode}
+            result = subprocess.run(command, capture_output=True, text=True, timeout=60)
         except subprocess.TimeoutExpired:
-            return {"error": "Test timed out"}
+            return {"error": "Verification timed out"}
+        except OSError as exc:
+            return {"error": f"Could not start verifier: {exc}"}
+        try:
+            payload = json.loads(result.stdout)
         except json.JSONDecodeError:
-            return {"error": "Invalid JSON output", "stdout": result.stdout}
-        except Exception as e:
-            return {"error": str(e)}
+            return {
+                "error": "Verifier did not return valid JSON",
+                "stdout": result.stdout,
+                "stderr": result.stderr,
+                "returncode": result.returncode,
+            }
+        if result.returncode not in (0, 1, 2):
+            payload["runner_error"] = result.stderr.strip() or f"Unexpected verifier exit code {result.returncode}"
+        return payload
 
-    def extract_reported_value(self, problem_file: Path) -> Optional[float]:
-        """Extract reported value from problem markdown."""
-        content = problem_file.read_text()
-        # Look for reported result pattern
-        import re
-        patterns = [
-            r'Reported Result\s*\n\s*Re\s*[=:]\s*([\d,\.]+)',
-            r'Reported Result\s*\n\s*ΔP\s*[=:]\s*([\d,\.]+)\s*(kPa|Pa)?',
-            r'Reported Result\s*\n\s*P₂\s*[=:]\s*([\d,\.]+)\s*(kPa|Pa)?',
-        ]
-        for pattern in patterns:
-            match = re.search(pattern, content, re.IGNORECASE)
-            if match:
-                val_str = match.group(1).replace(',', '')
-                try:
-                    val = float(val_str)
-                    # Convert kPa to Pa if needed
-                    if len(match.groups()) > 1 and match.group(2) and 'kPa' in match.group(2):
-                        val *= 1000
-                    return val
-                except ValueError:
-                    pass
-        return None
+    @staticmethod
+    def expected_verdict(expected_file: Path) -> str:
+        if not expected_file.exists():
+            return "UNKNOWN"
+        lines = expected_file.read_text(encoding="utf-8").splitlines()
+        for index, line in enumerate(lines):
+            if "Expected Verdict" in line:
+                for candidate in lines[index + 1:]:
+                    value = candidate.strip()
+                    if value:
+                        return VERDICT_ALIASES.get(value, value)
+        return "UNKNOWN"
 
     def run_case(self, case_dir: Path, case_name: str) -> Dict[str, Any]:
-        """Run a single test case."""
         problem_file = case_dir / "problem.md"
         expected_file = case_dir / "expected.md"
-
         if not problem_file.exists():
-            return {"case": case_name, "status": "SKIP", "error": "No problem.md"}
+            return {"case": case_name, "passed": False, "error": "No problem.md"}
 
-        # Extract reported value from problem
-        reported = self.extract_reported_value(problem_file)
-
-        # Run verification
-        result = self.run_verify(problem_file, reported)
-
-        # Read expected verdict
-        expected_verdict = "UNKNOWN"
-        if expected_file.exists():
-            content = expected_file.read_text()
-            if "Expected Verdict" in content:
-                for line in content.split('\n'):
-                    if "Expected Verdict" in line:
-                        expected_verdict = line.split(":")[-1].strip()
-                        break
-
-        # Determine test result
-        actual_verdict = result.get("verdict", "ERROR")
-        passed = actual_verdict == expected_verdict
-
-        test_result = {
+        result = self.run_verify(problem_file)
+        expected = self.expected_verdict(expected_file)
+        actual = result.get("verdict", "ERROR")
+        passed = actual == expected
+        item = {
             "case": case_name,
             "problem": str(problem_file),
-            "expected_verdict": expected_verdict,
-            "actual_verdict": actual_verdict,
+            "expected_verdict": expected,
+            "actual_verdict": actual,
             "confidence": result.get("confidence", "N/A"),
             "passed": passed,
-            "details": result
+            "details": result,
         }
-
         if self.verbose:
-            print(f"  {case_name}: Expected={expected_verdict}, Actual={actual_verdict} {'✓' if passed else '✗'}")
+            mark = "PASS" if passed else "FAIL"
+            print(f"{case_name}: expected {expected}, got {actual} ({mark})")
+        return item
 
-        return test_result
+    def discover_cases(self) -> List[Tuple[Path, str]]:
+        cases: List[Tuple[Path, str]] = []
+        if not TESTS_DIR.is_dir():
+            return cases
+        for domain in sorted(TESTS_DIR.iterdir()):
+            if not domain.is_dir():
+                continue
+            if domain.name in SUPPORTED_DOMAINS:
+                for case_dir in sorted(domain.iterdir()):
+                    if case_dir.is_dir() and (case_dir / "problem.md").is_file():
+                        cases.append((case_dir, f"{domain.name}/{case_dir.name}"))
+            elif domain.name in SUPPORTED_ROOT_CASES and (domain / "problem.md").is_file():
+                cases.append((domain, domain.name))
+        return cases
 
     def run_all(self) -> Dict[str, Any]:
-        """Run all test cases."""
-        if not TESTS_DIR.exists():
-            return {"error": f"Tests directory not found: {TESTS_DIR}"}
-
-        # Find all test cases
-        test_cases = []
-        for domain_dir in TESTS_DIR.iterdir():
-            if domain_dir.is_dir():
-                for case_dir in domain_dir.iterdir():
-                    if case_dir.is_dir() and (case_dir / "problem.md").exists():
-                        case_name = f"{domain_dir.name}/{case_dir.name}"
-                        test_cases.append((case_dir, case_name))
-
-        print(f"Found {len(test_cases)} test cases")
-
-        # Run each case
-        for case_dir, case_name in test_cases:
-            result = self.run_case(case_dir, case_name)
-            self.results.append(result)
-
-        # Summary
+        if not TESTS_DIR.is_dir():
+            return {"error": f"Verification cases directory not found: {TESTS_DIR}", "total": 0, "passed": 0, "failed": 0, "results": []}
+        self.results = [self.run_case(case_dir, name) for case_dir, name in self.discover_cases()]
         total = len(self.results)
-        passed = sum(1 for r in self.results if r.get("passed", False))
-        failed = total - passed
-
-        summary = {
+        passed = sum(1 for item in self.results if item.get("passed"))
+        return {
             "total": total,
             "passed": passed,
-            "failed": failed,
-            "success_rate": passed / total if total > 0 else 0,
-            "results": self.results
+            "failed": total - passed,
+            "success_rate": passed / total if total else 0.0,
+            "results": self.results,
         }
 
-        return summary
-
-    def print_summary(self, summary: Dict[str, Any]):
-        """Print test summary."""
-        print("\n" + "=" * 60)
+    @staticmethod
+    def print_summary(summary: Dict[str, Any]) -> None:
         print("TEST SUMMARY")
-        print("=" * 60)
         print(f"Total:  {summary['total']}")
         print(f"Passed: {summary['passed']}")
         print(f"Failed: {summary['failed']}")
         print(f"Rate:   {summary['success_rate']:.1%}")
-        print()
-
-        if summary['failed'] > 0:
-            print("FAILED CASES:")
-            for r in summary['results']:
-                if not r.get('passed', False):
-                    print(f"  {r['case']}: Expected {r['expected_verdict']}, Got {r['actual_verdict']}")
-            print()
-
-        # Group by domain
-        by_domain = {}
-        for r in summary['results']:
-            domain = r['case'].split('/')[0]
-            if domain not in by_domain:
-                by_domain[domain] = {"total": 0, "passed": 0}
-            by_domain[domain]['total'] += 1
-            if r.get('passed', False):
-                by_domain[domain]['passed'] += 1
-
-        print("BY DOMAIN:")
-        for domain, stats in by_domain.items():
-            print(f"  {domain}: {stats['passed']}/{stats['total']} ({stats['passed']/stats['total']:.1%})")
+        for item in summary.get("results", []):
+            if not item.get("passed"):
+                print(f"  {item['case']}: expected {item.get('expected_verdict')}, got {item.get('actual_verdict', 'ERROR')}")
 
 
-def main():
-    parser = argparse.ArgumentParser(description="Test runner for engineering-verification Skill")
-    parser.add_argument("--case", help="Run specific case (e.g., reynolds/reynolds_001)")
-    parser.add_argument("--verbose", action="store_true", help="Verbose output")
-    parser.add_argument("--json", action="store_true", help="Output JSON summary")
-
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Run checked-in verification cases")
+    parser.add_argument("--case", help="Case path, for example reynolds/reynolds_001 or mach_001")
+    parser.add_argument("--verbose", action="store_true")
+    parser.add_argument("--json", action="store_true", help="Print JSON summary")
     args = parser.parse_args()
-
     runner = TestRunner(verbose=args.verbose)
 
     if args.case:
-        # Run single case
-        case_dir = TESTS_DIR / args.case
-        if not case_dir.exists():
-            print(f"Case not found: {args.case}")
-            sys.exit(1)
+        case_dir = (TESTS_DIR / args.case).resolve()
+        try:
+            case_dir.relative_to(TESTS_DIR.resolve())
+        except ValueError:
+            parser.error("--case must refer to a case under tests/verification_cases")
+        relative_parts = case_dir.relative_to(TESTS_DIR.resolve()).parts
+        supported = bool(relative_parts) and (
+            relative_parts[0] in SUPPORTED_DOMAINS
+            or (len(relative_parts) == 1 and relative_parts[0] in SUPPORTED_ROOT_CASES)
+        )
+        if not supported:
+            parser.error("that case is calculator-only and has no end-to-end verification workflow")
         result = runner.run_case(case_dir, args.case)
         if args.json:
             print(json.dumps(result, indent=2))
         else:
-            print(f"Case: {result['case']}")
-            print(f"Expected: {result['expected_verdict']}")
-            print(f"Actual:   {result['actual_verdict']}")
-            print(f"Passed:   {result['passed']}")
-        sys.exit(0 if result.get('passed', False) else 1)
+            print(f"Case:    {result['case']}")
+            print(f"Expected: {result.get('expected_verdict', 'UNKNOWN')}")
+            print(f"Actual:   {result.get('actual_verdict', 'ERROR')}")
+            print(f"Passed:   {result.get('passed', False)}")
+        sys.exit(0 if result.get("passed") else 1)
 
-    # Run all cases
     summary = runner.run_all()
-
     if args.json:
         print(json.dumps(summary, indent=2))
     else:
         runner.print_summary(summary)
-
-    sys.exit(0 if summary['failed'] == 0 else 1)
+    sys.exit(0 if summary.get("failed", 1) == 0 and summary.get("total", 0) > 0 else 1)
 
 
 if __name__ == "__main__":

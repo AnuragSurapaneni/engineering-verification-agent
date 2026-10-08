@@ -9,11 +9,11 @@ Re ≈ 127,243 (turbulent)
 ## Required Checks
 - dimensional_consistency: PASS
 - air_property_consistency: PASS
-- numerical_calculation: FAIL (reported 50,000 vs computed 127,243, diff ≈ 61%)
+- numerical_calculation: FAIL (reported 50,000 vs computed 127,243, relative difference ≈ 154.5%)
 - physical_interpretation: PASS (both indicate turbulent, but magnitude wrong)
 
 ## Expected Verdict
-FAIL
+NOT VERIFIED
 
 ## Expected Confidence
 HIGH

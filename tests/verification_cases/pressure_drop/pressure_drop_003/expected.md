@@ -13,7 +13,7 @@ Cannot compute - missing Darcy friction factor (f)
 - physical_sanity: SKIPPED
 
 ## Expected Verdict
-INSUFFICIENT_INFORMATION
+INSUFFICIENT INFORMATION
 
 ## Required Information
 - Darcy friction factor (f) - requires either:

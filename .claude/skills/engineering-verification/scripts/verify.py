@@ -1,566 +1,510 @@
 #!/usr/bin/env python3
-"""
-Verify command for engineering-verification Skill.
+"""Run the repository's end-to-end engineering verification workflow."""
 
-Runs the full 10-step verification workflow on a problem.
-Can be invoked with a problem file or from conversation context.
-
-Usage:
-    python verify.py --problem-file examples/reynolds_number.md
-    python verify.py --problem-file examples/pressure_drop.md --reported-value '{"pressure_drop_Pa": 7976}'
-    python verify.py --problem-file examples/bernoulli.md --tolerance 0.02
-"""
-
-import sys
-import json
 import argparse
-import subprocess
-import os
-from pathlib import Path
-from typing import Dict, Any, Optional, List, Tuple
+import json
+import math
 import re
+import subprocess
+import sys
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
 
-# Add the Skill directory to path for imports
-SKILL_DIR = Path(__file__).parent.parent
-SCRIPTS_DIR = SKILL_DIR / "scripts"
-REFERENCES_DIR = SKILL_DIR / "references"
+
+REPOSITORY_ROOT = Path(__file__).resolve().parents[4]
+SCRIPTS_DIR = REPOSITORY_ROOT / "scripts"
+REFERENCES_FILE = REPOSITORY_ROOT / "references" / "fluid_mechanics" / "references.json"
+
+PROBLEM_DEFINITIONS = {
+    "reynolds_number": {
+        "name": "Reynolds Number",
+        "reference": "reynolds_number",
+        "equation": "Re = rho * V * D / mu",
+        "expected": "dimensionless",
+        "calculator": "reynolds_number",
+        "result_key": "Reynolds_number",
+        "required": [("rho", "V", "D", "mu"), ("V", "D", "nu")],
+        "assumptions": ["continuum fluid", "Newtonian fluid", "constant properties"],
+    },
+    "pressure_drop": {
+        "name": "Darcy-Weisbach Pressure Drop",
+        "reference": "darcy_weisbach",
+        "equation": "dP = f * (L / D) * (rho * V^2 / 2)",
+        "expected": "Pa",
+        "calculator": "pressure_drop",
+        "result_key": "pressure_drop_Pa",
+        "required": [("f", "L", "D", "rho", "V")],
+        "assumptions": ["steady, incompressible flow", "fully developed flow", "constant Darcy friction factor"],
+    },
+    "bernoulli": {
+        "name": "Bernoulli Equation",
+        "reference": "bernoulli",
+        "equation": "P2 = P1 + 0.5 * rho * (V1^2 - V2^2)",
+        "expected": "Pa",
+        "calculator": "bernoulli",
+        "result_key": "pressure_2_Pa",
+        "required": [("rho", "V1", "D1", "D2", "P1")],
+        "assumptions": ["steady, incompressible flow", "horizontal pipe", "negligible friction losses"],
+    },
+    "mach_number": {
+        "name": "Mach Number",
+        "reference": "mach_number",
+        "equation": "M = V / a",
+        "expected": "dimensionless",
+        "calculator": "mach_number",
+        "result_key": "mach_number",
+        "required": [("V", "a")],
+        "assumptions": ["speed of sound is defined for the stated medium and conditions"],
+    },
+}
+
+INPUT_ALIASES = {
+    "density": "rho", "rho": "rho",
+    "dynamicviscosity": "mu", "mu": "mu",
+    "kinematicviscosity": "nu", "nu": "nu",
+    "velocity": "V", "v": "V",
+    "diameter": "D", "pipediameter": "D", "d": "D",
+    "frictionfactor": "f", "darcyfrictionfactor": "f", "f": "f",
+    "pipelength": "L", "length": "L", "l": "L",
+    "pressureatpoint1": "P1", "pressure1": "P1", "p1": "P1",
+    "velocityatpoint1": "V1", "velocity1": "V1", "v1": "V1",
+    "diameteratpoint1": "D1", "diameter1": "D1", "d1": "D1",
+    "diameteratpoint2": "D2", "diameter2": "D2", "d2": "D2",
+    "speedofsound": "a", "soundspeed": "a", "a": "a",
+}
+DIMENSIONLESS_INPUTS = {"f"}
+SUPERSCRIPTS = str.maketrans({"⁰": "0", "¹": "1", "²": "2", "³": "3",
+                              "⁴": "4", "⁵": "5", "⁶": "6", "⁷": "7",
+                              "⁸": "8", "⁹": "9", "⁻": "-", "⁺": "+",
+                              "₀": "0", "₁": "1", "₂": "2"})
+
+
+def canonical_input_name(label: str) -> Optional[str]:
+    normalized = label.translate(SUPERSCRIPTS).lower()
+    normalized = normalized.replace("ρ", "rho").replace("μ", "mu").replace("ν", "nu")
+    normalized = re.sub(r"[^a-z0-9]", "", normalized)
+    if normalized in INPUT_ALIASES:
+        return INPUT_ALIASES[normalized]
+    # Prefer point-specific forms before the generic quantity names.
+    for phrase, canonical in (
+        ("velocityatpoint1", "V1"), ("diameteratpoint1", "D1"),
+        ("diameteratpoint2", "D2"), ("pressureatpoint1", "P1"),
+    ):
+        if phrase in normalized:
+            return canonical
+    if "dynamicviscosity" in normalized:
+        return "mu"
+    if "kinematicviscosity" in normalized:
+        return "nu"
+    if "density" in normalized:
+        return "rho"
+    if "frictionfactor" in normalized:
+        return "f"
+    if "speedofsound" in normalized:
+        return "a"
+    if "velocity" in normalized and "point1" not in normalized:
+        return "V"
+    if "diameter" in normalized and "point" not in normalized:
+        return "D"
+    if "pipelength" in normalized:
+        return "L"
+    return None
+
+
+def parse_quantity(text: str) -> Optional[Tuple[float, str]]:
+    text = text.replace("**", "").strip().translate(SUPERSCRIPTS)
+    match = re.match(
+        r"^\s*(?P<number>[+-]?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?(?:[eE][+-]?\d+)?)"
+        r"(?:\s*[×x]\s*10\s*\^?\s*(?P<power>[+-]?\d+))?\s*(?P<unit>[^\s()]+)?",
+        text,
+    )
+    if not match:
+        return None
+    value = float(match.group("number").replace(",", ""))
+    if match.group("power"):
+        value *= 10 ** int(match.group("power"))
+    return value, (match.group("unit") or "").rstrip(",")
+
+
+def normalize_unit(unit: str) -> str:
+    unit = unit.translate(SUPERSCRIPTS).replace("·", "*").replace("μ", "micro")
+    unit = re.sub(r"(?<=[A-Za-z])([23])(?=\b|/)", r"**\1", unit)
+    unit = unit.replace("m3", "m**3").replace("m2", "m**2")
+    unit = unit.replace("Pa*s", "Pa * s")
+    return unit
 
 
 class VerificationEngine:
-    """Orchestrates the 10-step verification workflow."""
-
     def __init__(self, verbose: bool = False):
         self.verbose = verbose
-        self.results = {}
 
     def run_tool(self, tool: str, args: List[str]) -> Dict[str, Any]:
-        """Run a Python tool script and return parsed JSON output."""
         script_path = SCRIPTS_DIR / f"{tool}.py"
-        cmd = [sys.executable, str(script_path)] + args
-
+        if not script_path.is_file():
+            return {"error": f"Required tool not found: {script_path}"}
+        command = [sys.executable, str(script_path), *args]
         if self.verbose:
-            print(f"  Running: {' '.join(cmd)}", file=sys.stderr)
-
+            print(f"Running: {' '.join(command)}", file=sys.stderr)
         try:
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
-            if result.returncode != 0:
-                return {"error": result.stderr, "returncode": result.returncode}
-
-            # Try to parse JSON output
-            output = result.stdout.strip()
-            if output:
-                try:
-                    return json.loads(output)
-                except json.JSONDecodeError:
-                    return {"raw_output": output}
-            return {}
+            result = subprocess.run(command, capture_output=True, text=True, timeout=30)
         except subprocess.TimeoutExpired:
-            return {"error": "Tool timed out"}
-        except Exception as e:
-            return {"error": str(e)}
+            return {"error": f"Tool timed out: {tool}"}
+        except OSError as exc:
+            return {"error": f"Could not run {tool}: {exc}"}
+        output = result.stdout.strip()
+        if output:
+            try:
+                parsed = json.loads(output)
+                if result.returncode and isinstance(parsed, dict):
+                    parsed.setdefault("returncode", result.returncode)
+                return parsed
+            except json.JSONDecodeError:
+                return {"error": result.stderr.strip() or output, "returncode": result.returncode}
+        return {"error": result.stderr.strip() or f"{tool} returned no output", "returncode": result.returncode}
 
-    def step1_understand_problem(self, problem_text: str) -> Dict[str, Any]:
-        """Step 1: Parse problem and extract knowns/unknowns."""
-        # Extract quantities with units
-        knowns = {}
-        reported = {}
+    def detect_problem(self, text: str) -> Optional[str]:
+        lowered = text.lower()
+        if "reynolds" in lowered:
+            return "reynolds_number"
+        if "bernoulli" in lowered:
+            return "bernoulli"
+        if "darcy" in lowered or "pressure drop" in lowered:
+            return "pressure_drop"
+        if "mach number" in lowered or re.search(r"\bmach\b", lowered):
+            return "mach_number"
+        return None
 
-        lines = problem_text.split('\n')
+    def parse_problem(self, text: str, problem_type: str) -> Tuple[Dict[str, Dict[str, Any]], Optional[Dict[str, Any]]]:
+        knowns: Dict[str, Dict[str, Any]] = {}
+        in_reported_section = False
+        reported = None
+        definition = PROBLEM_DEFINITIONS[problem_type]
 
-        for line in lines:
-            stripped = line.strip()
-
-            # Match "Name: value unit" format (with optional leading "-") e.g., "- Temperature: 300 K"
-            m = re.match(r'^(-?\s*)([A-Za-z][A-Za-z\s]*)\s*:\s*([\d\.eE\-\+]+)\s*([A-Za-z/\.\-]*)', stripped)
-            if m:
-                name = m.group(2).strip()
-                try:
-                    value = float(m.group(3))
-                    unit = m.group(4).strip()
-                    if name and value > 0:
-                        knowns[name] = {"value": value, "unit": unit}
-                except ValueError:
-                    pass
-
-            # Match markdown list items with quantities: "- Temperature: 300 K"
-            if stripped.startswith('-') and ':' in stripped:
-                m = re.search(r':\s*([\d\.eE\-\+]+)\s*([A-Za-z/]+)', stripped)
-                if m:
-                    try:
-                        value = float(m.group(1))
-                        unit = m.group(2)
-                        name = stripped.split(':')[0].strip('-').strip()
-                        knowns[name] = {"value": value, "unit": unit}
-                    except ValueError:
-                        pass
-
-            # Match "## Fluid Properties" section headers
-            if re.search(r'##\s*Fluid Properties', stripped, re.IGNORECASE):
-                continue  # Handled by quantity parsing above
-
-            # Match "## Reported Result" section
-            if re.search(r'##\s*Reported Result', stripped, re.IGNORECASE):
-                # Next lines will contain the reported value - handled by pattern matching below
+        for line in text.splitlines():
+            heading = re.match(r"^\s*#{1,6}\s+(.+?)\s*$", line)
+            if heading:
+                in_reported_section = "reported result" in heading.group(1).lower()
+            if in_reported_section:
+                match = re.match(r"^\s*([^=]+?)\s*=\s*(.+?)\s*$", line)
+                if match:
+                    symbol = match.group(1).strip().translate(SUPERSCRIPTS).lower()
+                    quantity = parse_quantity(match.group(2))
+                    if quantity:
+                        if symbol.startswith("re") or "reynolds" in symbol:
+                            key = "Reynolds_number"
+                        elif symbol.startswith("δp") or symbol.startswith("Δp".lower()) or "pressure drop" in symbol:
+                            key = "pressure_drop_Pa"
+                        elif symbol.startswith("p2") or symbol.startswith("p₂"):
+                            key = "pressure_2_Pa"
+                        elif symbol == "m" or "mach" in symbol:
+                            key = "mach_number"
+                        else:
+                            key = definition["result_key"]
+                        value, unit = quantity
+                        if unit.lower() == "kpa":
+                            value *= 1000.0
+                            unit = "Pa (converted from kPa)"
+                        reported = {"key": key, "value": value, "unit": unit or "SI"}
+                        break
                 continue
 
-        # Extract reported values from "## Reported Result" section
-        reported_patterns = [
-            r'##\s*Reported Result\s*\n\s*Re\s*[=:]\s*([\d\.]+)',
-            r'##\s*Reported Result\s*\n\s*ΔP\s*[=:]\s*([\d\.]+)\s*(kPa|Pa)?',
-            r'##\s*Reported Result\s*\n\s*Reynolds number\s*[=:]\s*([\d\.]+)',
-        ]
-        for pattern in reported_patterns:
-            for match in re.finditer(pattern, problem_text, re.IGNORECASE):
-                val_str = match.group(1)
-                try:
-                    reported["Re"] = float(val_str)
-                except ValueError:
-                    pass
+            label_value = re.match(r"^\s*[-*]\s*([^:]+?)\s*:\s*(.*?)\s*$", line)
+            if not label_value:
+                continue
+            canonical = canonical_input_name(label_value.group(1))
+            if canonical is None:
+                continue
+            quantity = parse_quantity(label_value.group(2))
+            if quantity:
+                value, unit = quantity
+                knowns[canonical] = {"value": value, "unit": normalize_unit(unit), "label": label_value.group(1).strip()}
 
-        # If no reported value found in structured section, check last part of problem text
-        if "Re" not in reported:
-            last_section_match = re.search(r'Re\s*[=:]\s*([\d\.]+)\s*\((\w+)\)', problem_text[-500:], re.IGNORECASE)
-            if last_section_match:
-                try:
-                    reported["Re"] = float(last_section_match.group(1))
-                except ValueError:
-                    pass
+        return knowns, reported
 
-        return {
-            "knowns": knowns,
-            "reported": reported,
-            "raw_text": problem_text[:500]
-        }
-
-    def step2_extract_equations(self, problem_text: str) -> Dict[str, Any]:
-        """Step 2: Identify governing equations from problem context."""
-        equations = {}
-
-        # Detect problem type from keywords
-        text_lower = problem_text.lower()
-
-        if "reynolds" in text_lower:
-            equations["primary"] = {
-                "name": "Reynolds Number",
-                "formula": "Re = rho * V * D / mu",
-                "alternate": "Re = V * D / nu",
-                "variables": ["rho", "V", "D", "mu"],
-                "output": "Re"
-            }
-        elif "darcy" in text_lower or "pressure drop" in text_lower:
-            equations["primary"] = {
-                "name": "Darcy-Weisbach Pressure Drop",
-                "formula": "ΔP = f * (L/D) * (rho * V^2 / 2)",
-                "variables": ["f", "L", "D", "rho", "V"],
-                "output": "ΔP"
-            }
-        elif "bernoulli" in text_lower:
-            equations["primary"] = {
-                "name": "Bernoulli Equation",
-                "formula": "P1/rho + V1^2/2 + g*z1 = P2/rho + V2^2/2 + g*z2",
-                "variables": ["rho", "V1", "D1", "D2", "P1"],
-                "output": "P2"
-            }
-
-        return equations
-
-    def step3_identify_assumptions(self, problem_text: str) -> List[str]:
-        """Step 3: Extract assumptions from problem."""
-        assumptions = []
-
-        # Default assumptions based on domain
-        text_lower = problem_text.lower()
-
-        if "reynolds" in text_lower:
-            assumptions.extend([
-                "continuum hypothesis",
-                "newtonian fluid",
-                "constant properties",
-                "fully developed flow"
-            ])
-        elif "pressure drop" in text_lower or "darcy" in text_lower:
-            assumptions.extend([
-                "steady, incompressible flow",
-                "fully developed flow",
-                "constant cross-section circular pipe",
-                "constant friction factor along pipe length"
-            ])
-        elif "bernoulli" in text_lower:
-            assumptions.extend([
-                "steady flow",
-                "incompressible flow",
-                "inviscid (no friction losses)",
-                "along a streamline",
-                "no shaft work (pumps/turbines)",
-                "no heat transfer"
-            ])
-
-        # Look for explicit assumptions in text
-        if "assum" in text_lower:
-            # Could parse explicit assumptions here
-            pass
-
-        return assumptions
-
-    def step4_check_units(self, knowns: Dict[str, Any]) -> Dict[str, Any]:
-        """Step 4: Verify unit consistency using units.py."""
-        # Convert all to SI using units.py
-        si_values = {}
-        issues = []
-
-        for name, data in knowns.items():
-            value = data["value"]
-            unit = data["unit"]
-            try:
-                result = self.run_tool("units", ["si", "--value", str(value), "--unit", unit])
-                if "error" not in result:
-                    si_values[name] = {"value": result["value"], "unit": result["unit"]}
+    def convert_inputs(self, knowns: Dict[str, Dict[str, Any]]) -> Tuple[Dict[str, float], List[str]]:
+        si_values: Dict[str, float] = {}
+        issues: List[str] = []
+        for name, quantity in knowns.items():
+            value = quantity["value"]
+            unit = quantity["unit"]
+            if name in DIMENSIONLESS_INPUTS:
+                if unit in ("", "1", "dimensionless"):
+                    si_values[name] = value
+                elif unit in ("%", "percent"):
+                    si_values[name] = value / 100.0
                 else:
-                    issues.append(f"{name}: {result['error']}")
-            except Exception as e:
-                issues.append(f"{name}: {e}")
+                    issues.append(f"{name}: expected a dimensionless value, got '{unit}'")
+                continue
+            if not unit:
+                issues.append(f"{name}: unit is missing")
+                continue
+            result = self.run_tool("units", ["si", "--value", str(value), "--unit", unit])
+            if "error" in result or "value" not in result:
+                issues.append(f"{name}: {result.get('error', 'unit conversion failed')}")
+                continue
+            si_values[name] = float(result["value"])
+        return si_values, issues
 
-        return {
-            "si_values": si_values,
-            "issues": issues,
-            "status": "PASS" if not issues else "FAIL"
-        }
+    def load_references(self) -> Dict[str, Any]:
+        def reject_duplicates(pairs):
+            result = {}
+            for key, value in pairs:
+                if key in result:
+                    raise ValueError(f"Duplicate reference key: {key}")
+                result[key] = value
+            return result
 
-    def step5_check_dimensions(self, equation: str, expected_output: str) -> Dict[str, Any]:
-        """Step 5: Dimensional analysis using dimensional_check.py."""
-        result = self.run_tool("dimensional_check", [
-            "--equation", equation,
-            "--expected", expected_output
-        ])
-        result["status"] = "PASS" if result.get("match", False) else "FAIL"
-        return result
+        with REFERENCES_FILE.open(encoding="utf-8") as handle:
+            data = json.load(handle, object_pairs_hook=reject_duplicates)
+        if not isinstance(data, dict):
+            raise ValueError("Reference database root must be an object")
+        for key, item in data.items():
+            if not isinstance(item, dict) or not isinstance(item.get("equation"), str):
+                raise ValueError(f"Reference '{key}' must include an equation string")
+            if not isinstance(item.get("sources", []), list) or not isinstance(item.get("assumptions", []), list):
+                raise ValueError(f"Reference '{key}' sources and assumptions must be lists")
+            for source in item.get("sources", []):
+                if not isinstance(source, dict) or not isinstance(source.get("title"), str):
+                    raise ValueError(f"Reference '{key}' contains a source without a title")
+        return data
 
-    def step6_independent_calculation(self, problem_type: str, inputs: Dict[str, float]) -> Dict[str, Any]:
-        """Step 6: Run numerical calculation using calculate.py."""
-        # Map problem type to calculator
-        type_map = {
-            "reynolds": "reynolds_number",
-            "reynolds_number": "reynolds_number",
-            "pressure_drop": "pressure_drop",
-            "darcy": "pressure_drop",
-            "darcy_weisbach": "pressure_drop",
-            "bernoulli": "bernoulli"
-        }
-
-        calc_type = type_map.get(problem_type, problem_type)
-
-        # Convert inputs dict to JSON string
-        inputs_json = json.dumps(inputs)
-
-        result = self.run_tool("calculate", [
-            "--problem", calc_type,
-            "--inputs", inputs_json
-        ])
-
-        return result
-
-    def step7_reference_verification(self, equation_name: str) -> Dict[str, Any]:
-        """Step 7: Cross-check against references.json."""
-        ref_file = REFERENCES_DIR / "fluid_mechanics" / "references.json"
-
-        if not ref_file.exists():
-            return {"status": "WARNING", "message": "References file not found"}
-
+    def check_reference(self, reference_id: str) -> Dict[str, Any]:
         try:
-            with open(ref_file) as f:
-                refs = json.load(f)
-
-            # Find matching reference
-            ref_key = None
-            for key in refs:
-                if equation_name.lower().replace(" ", "_") in key.lower():
-                    ref_key = key
-                    break
-
-            if ref_key:
-                ref = refs[ref_key]
-                return {
-                    "status": "PASS",
-                    "reference": ref_key,
-                    "sources_count": len(ref.get("sources", [])),
-                    "assumptions": ref.get("assumptions", [])
-                }
-            else:
-                return {"status": "WARNING", "message": f"No reference found for {equation_name}"}
-
-        except Exception as e:
-            return {"status": "FAIL", "error": str(e)}
-
-    def step8_physical_sanity_checks(self, problem_type: str, result: Dict[str, Any],
-                                      inputs: Dict[str, float]) -> Dict[str, Any]:
-        """Step 8: Physical sanity checks."""
-        checks = []
-        issues = []
-
-        if problem_type == "reynolds_number":
-            Re = result.get("Reynolds_number", 0)
-            checks.append(f"Re = {Re:.0f}")
-            if Re > 0:
-                checks.append("Re > 0 (physically meaningful)")
-            if Re > 4000:
-                checks.append("Turbulent regime (Re > 4000)")
-            elif Re < 2300:
-                checks.append("Laminar regime (Re < 2300)")
-            else:
-                checks.append("Transitional regime")
-
-        elif problem_type == "pressure_drop":
-            dP = result.get("pressure_drop_Pa", 0)
-            checks.append(f"ΔP = {dP:.1f} Pa")
-            if dP > 0:
-                checks.append("Positive pressure drop (correct sign)")
-            else:
-                issues.append("Negative pressure drop (incorrect sign)")
-
-            # Check V^2 relationship
-            if "V" in inputs and "rho" in inputs and "f" in inputs and "L" in inputs and "D" in inputs:
-                expected_order = inputs["f"] * (inputs["L"]/inputs["D"]) * (inputs["rho"] * inputs["V"]**2 / 2)
-                ratio = dP / expected_order if expected_order != 0 else 0
-                if 0.5 < ratio < 2.0:
-                    checks.append("Magnitude consistent with V^2 scaling")
-                else:
-                    issues.append(f"Magnitude unexpected (ratio: {ratio:.2f})")
-
-        elif problem_type == "bernoulli":
-            P2 = result.get("pressure_2_Pa", 0)
-            V2 = result.get("velocity_2_m_s", 0)
-            V1 = inputs.get("V1", 0)
-            checks.append(f"P2 = {P2/1000:.1f} kPa")
-            checks.append(f"V2 = {V2:.1f} m/s")
-            if V2 > V1:
-                checks.append("Velocity increases as diameter decreases (continuity)")
-            if P2 < inputs.get("P1", 0):
-                checks.append("Pressure decreases as velocity increases (Venturi effect)")
-            else:
-                issues.append("Pressure should decrease when velocity increases")
-
+            data = self.load_references()
+        except (OSError, json.JSONDecodeError, ValueError) as exc:
+            return {"status": "FAIL", "error": str(exc)}
+        item = data.get(reference_id)
+        if item is None:
+            return {"status": "FAIL", "error": f"No reference entry for '{reference_id}'"}
+        sources = item.get("sources", [])
+        if not sources:
+            return {"status": "FAIL", "error": f"Reference '{reference_id}' has no source records"}
         return {
-            "checks": checks,
-            "issues": issues,
-            "status": "PASS" if not issues else "FAIL"
+            "status": "PASS",
+            "reference": reference_id,
+            "equation": item["equation"],
+            "sources_count": len(sources),
+            "assumptions": item.get("assumptions", []),
         }
-
-    def step9_compare_results(self, computed: float, reported: float, tolerance: float = 0.01) -> Dict[str, Any]:
-        """Step 9: Compare computed vs reported using compare.py."""
-        result = self.run_tool("compare", [
-            "--computed", str(computed),
-            "--reported", str(reported),
-            "--tolerance", str(tolerance)
-        ])
-        result["status"] = "PASS" if result.get("passed", False) else "FAIL"
-        return result
-
-    def step10_generate_report(self, problem_text: str, all_results: Dict[str, Any]) -> str:
-        """Step 10: Generate structured verification report."""
-        report = []
-        report.append("ENGINEERING VERIFICATION REPORT")
-        report.append("=" * 40)
-        report.append("")
-
-        # Problem summary
-        report.append(f"Problem: {all_results.get('problem_summary', 'Engineering calculation')}")
-        report.append(f"Governing Equation: {all_results.get('equation', {}).get('formula', 'N/A')}")
-        report.append(f"Assumptions: {', '.join(all_results.get('assumptions', []))}")
-        report.append("")
-
-        # Check results
-        checks = [
-            ("Dimensional Check", all_results.get("dimensional_check", {})),
-            ("Unit Consistency", all_results.get("unit_check", {})),
-            ("Independent Calculation", all_results.get("calculation", {})),
-            ("Reference Check", all_results.get("reference_check", {})),
-            ("Physical Sanity Check", all_results.get("sanity_check", {})),
-            ("Comparison with Reported", all_results.get("comparison", {})),
-        ]
-
-        for name, result in checks:
-            status = result.get("status", "N/A")
-            report.append(f"{name}: {status}")
-
-        report.append("")
-
-        # Overall verdict
-        verdict = all_results.get("verdict", "INSUFFICIENT INFORMATION")
-        confidence = all_results.get("confidence", "LOW")
-        report.append(f"Overall Verdict: {verdict}")
-        report.append(f"Confidence: {confidence}")
-
-        return "\n".join(report)
 
     def verify(self, problem_file: Optional[str] = None, problem_text: Optional[str] = None,
                reported_value: Optional[float] = None, tolerance: float = 0.01) -> Dict[str, Any]:
-        """Run full verification workflow."""
-
-        # Get problem text
         if problem_file:
-            with open(problem_file) as f:
-                problem_text = f.read()
-        elif problem_text is None:
-            return {"error": "Either problem_file or problem_text must be provided"}
+            try:
+                problem_text = Path(problem_file).read_text(encoding="utf-8")
+            except OSError as exc:
+                return self.failure_result(f"Could not read problem file: {exc}")
+        if problem_text is None:
+            return self.failure_result("A problem file or problem text is required")
 
-        # Step 1: Understand problem
-        problem_data = self.step1_understand_problem(problem_text)
-        knowns = problem_data["knowns"]
-        reported = problem_data["reported"]
+        problem_type = self.detect_problem(problem_text)
+        if problem_type is None:
+            return self.failure_result("The problem type is not supported by the end-to-end verifier")
 
-        # Step 2: Extract equations
-        equations = self.step2_extract_equations(problem_text)
-        primary_eq = equations.get("primary", {})
-        problem_type = primary_eq.get("name", "").lower().replace(" ", "_")
+        definition = PROBLEM_DEFINITIONS[problem_type]
+        knowns, parsed_report = self.parse_problem(problem_text, problem_type)
+        si_inputs, unit_issues = self.convert_inputs(knowns)
+        input_issues = self.validate_inputs(problem_type, si_inputs)
+        if problem_type == "reynolds_number":
+            missing = [name for name in ("V", "D") if name not in si_inputs]
+            if "rho" not in si_inputs and "nu" not in si_inputs:
+                missing.append("rho or nu")
+            if "mu" not in si_inputs and "nu" not in si_inputs:
+                missing.append("mu or nu")
+        else:
+            required = definition["required"][0]
+            missing = [name for name in required if name not in si_inputs]
 
-        # Step 3: Identify assumptions
-        assumptions = self.step3_identify_assumptions(problem_text)
-
-        # Step 4: Check units
-        unit_check = self.step4_check_units(knowns)
-
-        # Step 5: Check dimensions
-        eq_formula = primary_eq.get("formula", "")
-        expected_dim = primary_eq.get("output", "dimensionless")
-        # Map output to expected dimension string
-        dim_map = {
-            "Re": "dimensionless",
-            "ΔP": "Pa",
-            "P2": "Pa"
-        }
-        expected_dim_str = dim_map.get(expected_dim, expected_dim)
-        dimensional_check = self.step5_check_dimensions(eq_formula, expected_dim_str)
-
-        # Step 6: Independent calculation
-        # Prepare inputs in SI units
-        si_inputs = {}
-        for name, data in unit_check.get("si_values", {}).items():
-            si_inputs[name] = data["value"]
-
-        # Map known names to calculator expected names
-        name_map = {
-            "Density": "rho",
-            "Velocity": "V",
-            "Pipe diameter": "D",
-            "Dynamic viscosity": "mu",
-            "Kinematic viscosity": "nu",
-            "Friction factor": "f",
-            "Pipe length": "L",
-            "Pressure at point 1": "P1",
-            "Diameter at point 1": "D1",
-            "Diameter at point 2": "D2",
-            "Velocity at point 1": "V1"
-        }
-
-        calc_inputs = {}
-        for orig_name, value in si_inputs.items():
-            mapped = name_map.get(orig_name, orig_name.lower().replace(" ", "_"))
-            calc_inputs[mapped] = value
-
-        calculation = self.step6_independent_calculation(problem_type, calc_inputs)
-
-        # Step 7: Reference verification
-        ref_check = self.step7_reference_verification(primary_eq.get("name", ""))
-
-        # Step 8: Physical sanity checks
-        sanity_check = self.step8_physical_sanity_checks(problem_type, calculation, calc_inputs)
-
-        # Step 9: Compare with reported (if provided)
-        comparison = {}
-        if reported_value is not None:
-            # Extract the computed value based on problem type
-            computed_val = None
-            if "Reynolds_number" in calculation:
-                computed_val = calculation["Reynolds_number"]
-            elif "pressure_drop_Pa" in calculation:
-                computed_val = calculation["pressure_drop_Pa"]
-            elif "pressure_2_Pa" in calculation:
-                computed_val = calculation["pressure_2_Pa"]
-
-            if computed_val is not None:
-                comparison = self.step9_compare_results(computed_val, reported_value, tolerance)
-
-        # Step 10: Determine verdict
-        all_pass = all([
-            dimensional_check.get("status") == "PASS",
-            unit_check.get("status") == "PASS",
-            "error" not in calculation,
-            ref_check.get("status") in ("PASS", "WARNING"),
-            sanity_check.get("status") == "PASS",
-            comparison.get("status", "PASS") == "PASS" if comparison else True
+        dimensional = self.run_tool("dimensional_check", [
+            "--equation", definition["equation"], "--expected", definition["expected"], "--verbose",
         ])
+        dimensional["status"] = "PASS" if dimensional.get("match") else "FAIL"
 
-        if reported_value is not None and not all_pass:
-            verdict = "NOT VERIFIED"
-        elif reported_value is None and all_pass:
-            verdict = "VERIFIED"
-        elif "error" in calculation or unit_check.get("status") == "FAIL":
+        reference = self.check_reference(definition["reference"])
+        calculation: Dict[str, Any] = {}
+        if not missing and not unit_issues and not input_issues:
+            calculation = self.run_tool("calculate", [
+                "--problem", definition["calculator"], "--inputs", json.dumps(si_inputs),
+            ])
+        elif missing:
+            calculation = {"status": "SKIPPED", "reason": "Required inputs are missing"}
+        elif unit_issues:
+            calculation = {"status": "SKIPPED", "reason": "One or more input units could not be converted"}
+        else:
+            calculation = {"status": "SKIPPED", "reason": "One or more input values are physically invalid"}
+
+        if calculation and calculation.get("status") != "SKIPPED" and "error" not in calculation:
+            calculation["status"] = "PASS"
+        elif "error" in calculation:
+            calculation["status"] = "FAIL"
+
+        reported = ({"key": definition["result_key"], "value": float(reported_value), "unit": "SI override"}
+                    if reported_value is not None else parsed_report)
+        computed = calculation.get(definition["result_key"])
+
+        comparison: Dict[str, Any]
+        if reported is None:
+            comparison = {"status": "SKIPPED", "reason": "No reported result was provided"}
+        elif reported["key"] != definition["result_key"]:
+            comparison = {"status": "FAIL", "error": f"Reported result key '{reported['key']}' does not match '{definition['result_key']}'"}
+        elif computed is None:
+            comparison = {"status": "SKIPPED", "reason": "No computed result is available"}
+        else:
+            comparison = self.run_tool("compare", [
+                "--computed", str(computed), "--reported", str(reported["value"]), "--tolerance", str(tolerance),
+            ])
+            comparison["status"] = "PASS" if comparison.get("passed") else "FAIL"
+
+        sanity = self.physical_sanity(problem_type, calculation, si_inputs)
+        unit_check = {"status": "FAIL" if unit_issues else "PASS", "si_values": si_inputs, "issues": unit_issues}
+        if missing:
+            unit_check["missing_required_inputs"] = missing
+        input_validation = {"status": "FAIL" if input_issues else "PASS", "issues": input_issues}
+
+        if missing or unit_issues or not reported or reference["status"] != "PASS":
             verdict = "INSUFFICIENT INFORMATION"
+        elif input_issues or "error" in calculation or dimensional["status"] == "FAIL" or sanity["status"] == "FAIL" or comparison["status"] == "FAIL":
+            verdict = "NOT VERIFIED"
         else:
             verdict = "VERIFIED"
 
-        # Confidence
-        if verdict == "VERIFIED" and all_pass:
-            confidence = "HIGH"
-        elif verdict == "VERIFIED":
-            confidence = "MEDIUM"
-        else:
-            confidence = "LOW"
-
-        # Compile all results
-        all_results = {
+        confidence = "HIGH" if verdict == "VERIFIED" else ("MEDIUM" if verdict == "NOT VERIFIED" and computed is not None else "LOW")
+        result = {
+            "problem_type": problem_type,
             "problem_summary": problem_text[:200],
-            "equation": primary_eq,
-            "assumptions": assumptions,
+            "equation": definition["equation"],
+            "assumptions": definition["assumptions"],
             "unit_check": unit_check,
-            "dimensional_check": dimensional_check,
+            "input_validation": input_validation,
+            "dimensional_check": dimensional,
             "calculation": calculation,
-            "reference_check": ref_check,
-            "sanity_check": sanity_check,
+            "reference_check": reference,
+            "sanity_check": sanity,
+            "reported_result": reported,
             "comparison": comparison,
+            "missing_inputs": missing,
             "verdict": verdict,
-            "confidence": confidence
+            "confidence": confidence,
         }
+        result["report"] = self.format_report(result)
+        return result
 
-        # Generate report
-        report = self.step10_generate_report(problem_text, all_results)
-        all_results["report"] = report
+    @staticmethod
+    def validate_inputs(problem_type: str, inputs: Dict[str, float]) -> List[str]:
+        issues = [f"{name} must be finite" for name, value in inputs.items() if not math.isfinite(value)]
+        strictly_positive = {
+            "reynolds_number": ("rho", "D"),
+            "pressure_drop": ("rho", "D"),
+            "bernoulli": ("rho", "D1", "D2"),
+            "mach_number": ("a",),
+        }[problem_type]
+        for name in strictly_positive:
+            if name in inputs and inputs[name] <= 0:
+                issues.append(f"{name} must be greater than zero")
 
-        return all_results
+        non_negative = {
+            "reynolds_number": ("V",),
+            "pressure_drop": ("V", "L", "f"),
+            "bernoulli": ("V1",),
+            "mach_number": ("V",),
+        }[problem_type]
+        for name in non_negative:
+            if name in inputs and inputs[name] < 0:
+                issues.append(f"{name} must be non-negative")
+
+        if problem_type == "reynolds_number":
+            for name in ("mu", "nu"):
+                if name in inputs and inputs[name] == 0:
+                    issues.append(f"{name} must be greater than zero")
+        return issues
+
+    @staticmethod
+    def physical_sanity(problem_type: str, calculation: Dict[str, Any], inputs: Dict[str, float]) -> Dict[str, Any]:
+        if calculation.get("status") == "SKIPPED":
+            return {"status": "SKIPPED", "checks": [], "issues": [], "reason": calculation.get("reason")}
+        if "error" in calculation or not calculation:
+            return {"status": "SKIPPED", "checks": [], "issues": ["No calculation result is available"]}
+        checks: List[str] = []
+        issues: List[str] = []
+        if problem_type == "reynolds_number":
+            reynolds = calculation.get("Reynolds_number")
+            if reynolds is None or not math.isfinite(reynolds) or reynolds < 0:
+                issues.append("Reynolds number must be non-negative and finite")
+            else:
+                checks.append(f"Positive finite Reynolds number ({reynolds:.6g})")
+        elif problem_type == "pressure_drop":
+            pressure_drop = calculation.get("pressure_drop_Pa")
+            if pressure_drop is None or not math.isfinite(pressure_drop) or pressure_drop < 0:
+                issues.append("Pressure drop must be finite and non-negative")
+            else:
+                checks.append(f"Finite non-negative pressure drop ({pressure_drop:.6g} Pa)")
+        elif problem_type == "bernoulli":
+            velocity_2 = calculation.get("velocity_2_m_s")
+            pressure_2 = calculation.get("pressure_2_Pa")
+            if velocity_2 is None or not math.isfinite(velocity_2) or velocity_2 < 0:
+                issues.append("Calculated downstream velocity is not physically meaningful")
+            else:
+                checks.append(f"Finite downstream velocity ({velocity_2:.6g} m/s)")
+            if pressure_2 is None or not math.isfinite(pressure_2):
+                issues.append("Calculated downstream pressure is not finite")
+            else:
+                checks.append(f"Finite downstream pressure ({pressure_2:.6g} Pa)")
+        elif problem_type == "mach_number":
+            mach = calculation.get("mach_number")
+            if mach is None or not math.isfinite(mach) or mach < 0:
+                issues.append("Mach number must be finite and non-negative")
+            else:
+                checks.append(f"Finite non-negative Mach number ({mach:.6g})")
+        return {"status": "FAIL" if issues else "PASS", "checks": checks, "issues": issues}
+
+    @staticmethod
+    def format_report(result: Dict[str, Any]) -> str:
+        lines = [
+            "ENGINEERING VERIFICATION REPORT",
+            "================================",
+            f"Problem type: {result['problem_type']}",
+            f"Governing equation: {result['equation']}",
+            f"Assumptions: {', '.join(result['assumptions'])}",
+            "",
+        ]
+        for name in ("unit_check", "input_validation", "dimensional_check", "calculation", "reference_check", "sanity_check", "comparison"):
+            item = result[name]
+            lines.append(f"{name.replace('_', ' ').title()}: {item.get('status', 'N/A')}")
+            for detail in item.get("issues", []):
+                lines.append(f"  - {detail}")
+            if item.get("error"):
+                lines.append(f"  - Error: {item['error']}")
+            if item.get("reason"):
+                lines.append(f"  - {item['reason']}")
+        if result["missing_inputs"]:
+            lines.append("Missing inputs: " + ", ".join(result["missing_inputs"]))
+        if result.get("reported_result"):
+            lines.append(f"Reported result: {result['reported_result']['value']} {result['reported_result']['unit']}")
+        lines.extend(["", f"Overall verdict: {result['verdict']}", f"Confidence: {result['confidence']}"])
+        return "\n".join(lines)
+
+    @staticmethod
+    def failure_result(message: str) -> Dict[str, Any]:
+        report = f"ENGINEERING VERIFICATION REPORT\n================================\n\nINSUFFICIENT INFORMATION\n{message}"
+        return {"verdict": "INSUFFICIENT INFORMATION", "confidence": "LOW", "error": message, "report": report}
 
 
-def main():
-    parser = argparse.ArgumentParser(description="Engineering verification command")
-    parser.add_argument("--problem-file", help="Path to problem markdown file")
-    parser.add_argument("--reported-value", type=float, help="Reported result to verify against")
-    parser.add_argument("--tolerance", type=float, default=0.01, help="Relative tolerance (default: 0.01)")
-    parser.add_argument("--output", choices=["json", "markdown", "text"], default="markdown")
-    parser.add_argument("--verbose", action="store_true", help="Verbose output")
-
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Verify a supported engineering calculation")
+    parser.add_argument("--problem-file", help="Path to a problem Markdown file")
+    parser.add_argument("--reported-value", type=float, help="Reported result in SI units (overrides the file)")
+    parser.add_argument("--tolerance", type=float, default=0.01, help="Relative comparison tolerance")
+    parser.add_argument("--output", choices=("json", "markdown", "text"), default="markdown")
+    parser.add_argument("--verbose", action="store_true")
     args = parser.parse_args()
 
-    engine = VerificationEngine(verbose=args.verbose)
-
-    result = engine.verify(
-        problem_file=args.problem_file,
-        reported_value=args.reported_value,
-        tolerance=args.tolerance
+    if not 0 <= args.tolerance:
+        parser.error("--tolerance must be non-negative")
+    result = VerificationEngine(verbose=args.verbose).verify(
+        problem_file=args.problem_file, reported_value=args.reported_value, tolerance=args.tolerance,
     )
-
-    if args.output == "json":
-        print(json.dumps(result, indent=2))
-    elif args.output == "text":
-        print(result.get("report", "No report generated"))
-    else:
-        print(result.get("report", "No report generated"))
-
-    # Exit with appropriate code
-    if result.get("verdict") == "VERIFIED":
-        sys.exit(0)
-    elif result.get("verdict") == "NOT VERIFIED":
-        sys.exit(1)
-    else:
-        sys.exit(2)
+    print(json.dumps(result, indent=2) if args.output == "json" else result.get("report", "No report generated"))
+    sys.exit({"VERIFIED": 0, "NOT VERIFIED": 1, "INSUFFICIENT INFORMATION": 2}.get(result.get("verdict"), 2))
 
 
 if __name__ == "__main__":

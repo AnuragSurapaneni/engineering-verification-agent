@@ -13,7 +13,7 @@
 - physical_sanity: PASS (positive pressure drop, reasonable magnitude)
 
 ## Expected Verdict
-PASS
+VERIFIED
 
 ## Expected Confidence
 HIGH

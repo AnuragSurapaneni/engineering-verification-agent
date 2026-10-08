@@ -8,7 +8,9 @@
     "sources": [
       {
         "title": "White - Fluid Mechanics, 8th Edition",
-        "authors": ["Frank M. White"],
+        "authors": [
+          "Frank M. White"
+        ],
         "year": 2016,
         "publisher": "McGraw-Hill",
         "equation_form": "Re = rho*V*D/mu",
@@ -17,7 +19,12 @@
       },
       {
         "title": "Munson, Young, Okiishi - Fundamentals of Fluid Mechanics, 8th Edition",
-        "authors": ["Bruce R. Munson", "Theodore H. Okiishi", "Wade W. Huebsch", "Alric P. Rothmayer"],
+        "authors": [
+          "Bruce R. Munson",
+          "Theodore H. Okiishi",
+          "Wade W. Huebsch",
+          "Alric P. Rothmayer"
+        ],
         "year": 2016,
         "publisher": "Wiley",
         "equation_form": "Re = V*D/nu",
@@ -26,7 +33,10 @@
       },
       {
         "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
-        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "authors": [
+          "Yunus A. Cengel",
+          "John M. Cimbala"
+        ],
         "year": 2018,
         "publisher": "McGraw-Hill",
         "equation_form": "Re = V*D/nu = rho*V*D/mu",
@@ -56,7 +66,9 @@
     "sources": [
       {
         "title": "White - Fluid Mechanics, 8th Edition",
-        "authors": ["Frank M. White"],
+        "authors": [
+          "Frank M. White"
+        ],
         "year": 2016,
         "publisher": "McGraw-Hill",
         "equation_form": "ΔP = f * (L/D) * (rho * V^2 / 2)",
@@ -65,7 +77,9 @@
       },
       {
         "title": "Moody - Friction Factors for Pipe Flow",
-        "authors": ["L. F. Moody"],
+        "authors": [
+          "L. F. Moody"
+        ],
         "year": 1944,
         "publisher": "ASME Transactions",
         "equation_form": "h_f = f * (L/D) * (V^2 / (2*g))",
@@ -74,7 +88,10 @@
       },
       {
         "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
-        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "authors": [
+          "Yunus A. Cengel",
+          "John M. Cimbala"
+        ],
         "year": 2018,
         "publisher": "McGraw-Hill",
         "equation_form": "ΔP = f * (L/D) * (rho * V^2 / 2)",
@@ -105,7 +122,9 @@
     "sources": [
       {
         "title": "White - Fluid Mechanics, 8th Edition",
-        "authors": ["Frank M. White"],
+        "authors": [
+          "Frank M. White"
+        ],
         "year": 2016,
         "publisher": "McGraw-Hill",
         "equation_form": "P/rho + V^2/2 + gz = constant",
@@ -114,7 +133,12 @@
       },
       {
         "title": "Munson et al. - Fundamentals of Fluid Mechanics, 8th Edition",
-        "authors": ["Bruce R. Munson", "Theodore H. Okiishi", "Wade W. Huebsch", "Alric P. Rothmayer"],
+        "authors": [
+          "Bruce R. Munson",
+          "Theodore H. Okiishi",
+          "Wade W. Huebsch",
+          "Alric P. Rothmayer"
+        ],
         "year": 2016,
         "publisher": "Wiley",
         "equation_form": "P/gamma + V^2/(2g) + z = constant",
@@ -123,7 +147,10 @@
       },
       {
         "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
-        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "authors": [
+          "Yunus A. Cengel",
+          "John M. Cimbala"
+        ],
         "year": 2018,
         "publisher": "McGraw-Hill",
         "equation_form": "P/rho + V^2/2 + gz = constant",
@@ -154,7 +181,9 @@
     "sources": [
       {
         "title": "White - Fluid Mechanics, 8th Edition",
-        "authors": ["Frank M. White"],
+        "authors": [
+          "Frank M. White"
+        ],
         "year": 2016,
         "publisher": "McGraw-Hill",
         "equation_form": "∂ρ/∂t + ∇·(ρV) = 0",
@@ -163,7 +192,10 @@
       },
       {
         "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
-        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "authors": [
+          "Yunus A. Cengel",
+          "John M. Cimbala"
+        ],
         "year": 2018,
         "publisher": "McGraw-Hill",
         "equation_form": "∂ρ/∂t + ∇·(ρV) = 0",
@@ -187,7 +219,9 @@
     "sources": [
       {
         "title": "White - Fluid Mechanics, 8th Edition",
-        "authors": ["Frank M. White"],
+        "authors": [
+          "Frank M. White"
+        ],
         "year": 2016,
         "publisher": "McGraw-Hill",
         "equation_form": "ρ DV/Dt = ∇·σ + ρg",
@@ -196,7 +230,12 @@
       },
       {
         "title": "Munson et al. - Fundamentals of Fluid Mechanics, 8th Edition",
-        "authors": ["Bruce R. Munson", "Theodore H. Okiishi", "Wade W. Huebsch", "Alric P. Rothmayer"],
+        "authors": [
+          "Bruce R. Munson",
+          "Theodore H. Okiishi",
+          "Wade W. Huebsch",
+          "Alric P. Rothmayer"
+        ],
         "year": 2016,
         "publisher": "Wiley",
         "equation_form": "ρ a = ΣF",
@@ -218,7 +257,9 @@
     "sources": [
       {
         "title": "White - Fluid Mechanics, 8th Edition",
-        "authors": ["Frank M. White"],
+        "authors": [
+          "Frank M. White"
+        ],
         "year": 2016,
         "publisher": "McGraw-Hill",
         "equation_form": "ρ De/Dt = ∇·(k∇T) + Φ + ρr",
@@ -227,7 +268,10 @@
       },
       {
         "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
-        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "authors": [
+          "Yunus A. Cengel",
+          "John M. Cimbala"
+        ],
         "year": 2018,
         "publisher": "McGraw-Hill",
         "equation_form": "ρ De/Dt = ∇·(k∇T) + Φ",
@@ -250,7 +294,9 @@
     "sources": [
       {
         "title": "White - Fluid Mechanics, 8th Edition",
-        "authors": ["Frank M. White"],
+        "authors": [
+          "Frank M. White"
+        ],
         "year": 2016,
         "publisher": "McGraw-Hill",
         "equation_form": "dH_CV/dt = ∫_CS r × (ρV)(V·n) dA",
@@ -272,7 +318,9 @@
     "sources": [
       {
         "title": "White - Fluid Mechanics, 8th Edition",
-        "authors": ["Frank M. White"],
+        "authors": [
+          "Frank M. White"
+        ],
         "year": 2016,
         "publisher": "McGraw-Hill",
         "equation_form": "ρ(∂V/∂t + V·∇V) = -∇p + ρg",
@@ -281,7 +329,10 @@
       },
       {
         "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
-        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "authors": [
+          "Yunus A. Cengel",
+          "John M. Cimbala"
+        ],
         "year": 2018,
         "publisher": "McGraw-Hill",
         "equation_form": "ρa = -∇p + ρg",
@@ -304,7 +355,9 @@
     "sources": [
       {
         "title": "White - Fluid Mechanics, 8th Edition",
-        "authors": ["Frank M. White"],
+        "authors": [
+          "Frank M. White"
+        ],
         "year": 2016,
         "publisher": "McGraw-Hill",
         "equation_form": "V = ∇φ",
@@ -313,7 +366,12 @@
       },
       {
         "title": "Munson et al. - Fundamentals of Fluid Mechanics, 8th Edition",
-        "authors": ["Bruce R. Munson", "Theodore H. Okiishi", "Wade W. Huebsch", "Alric P. Rothmayer"],
+        "authors": [
+          "Bruce R. Munson",
+          "Theodore H. Okiishi",
+          "Wade W. Huebsch",
+          "Alric P. Rothmayer"
+        ],
         "year": 2016,
         "publisher": "Wiley",
         "equation_form": "V = ∇φ",
@@ -337,7 +395,9 @@
     "sources": [
       {
         "title": "White - Fluid Mechanics, 8th Edition",
-        "authors": ["Frank M. White"],
+        "authors": [
+          "Frank M. White"
+        ],
         "year": 2016,
         "publisher": "McGraw-Hill",
         "equation_form": "V = (∂ψ/∂y, -∂ψ/∂x)",
@@ -346,7 +406,10 @@
       },
       {
         "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
-        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "authors": [
+          "Yunus A. Cengel",
+          "John M. Cimbala"
+        ],
         "year": 2018,
         "publisher": "McGraw-Hill",
         "equation_form": "u = ∂ψ/∂y, v = -∂ψ/∂x",
@@ -368,7 +431,9 @@
     "sources": [
       {
         "title": "White - Fluid Mechanics, 8th Edition",
-        "authors": ["Frank M. White"],
+        "authors": [
+          "Frank M. White"
+        ],
         "year": 2016,
         "publisher": "McGraw-Hill",
         "equation_form": "Γ = ∮_C V·ds",
@@ -377,7 +442,10 @@
       },
       {
         "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
-        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "authors": [
+          "Yunus A. Cengel",
+          "John M. Cimbala"
+        ],
         "year": 2018,
         "publisher": "McGraw-Hill",
         "equation_form": "Γ = ∮_C V·ds",
@@ -399,7 +467,9 @@
     "sources": [
       {
         "title": "White - Fluid Mechanics, 8th Edition",
-        "authors": ["Frank M. White"],
+        "authors": [
+          "Frank M. White"
+        ],
         "year": 2016,
         "publisher": "McGraw-Hill",
         "equation_form": "dΓ/dt = 0",
@@ -408,7 +478,10 @@
       },
       {
         "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
-        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "authors": [
+          "Yunus A. Cengel",
+          "John M. Cimbala"
+        ],
         "year": 2018,
         "publisher": "McGraw-Hill",
         "equation_form": "dΓ/dt = 0",
@@ -432,7 +505,9 @@
     "sources": [
       {
         "title": "White - Fluid Mechanics, 8th Edition",
-        "authors": ["Frank M. White"],
+        "authors": [
+          "Frank M. White"
+        ],
         "year": 2016,
         "publisher": "McGraw-Hill",
         "equation_form": "Dω/Dt = (ω·∇)V + ν∇²ω",
@@ -441,7 +516,10 @@
       },
       {
         "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
-        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "authors": [
+          "Yunus A. Cengel",
+          "John M. Cimbala"
+        ],
         "year": 2018,
         "publisher": "McGraw-Hill",
         "equation_form": "Dω/Dt = (ω·∇)V + αν",
@@ -464,7 +542,9 @@
     "sources": [
       {
         "title": "White - Fluid Mechanics, 8th Edition",
-        "authors": ["Frank M. White"],
+        "authors": [
+          "Frank M. White"
+        ],
         "year": 2016,
         "publisher": "McGraw-Hill",
         "equation_form": "p/γ + V²/2g + z = constant",
@@ -473,7 +553,12 @@
       },
       {
         "title": "Munson et al. - Fundamentals of Fluid Mechanics, 8th Edition",
-        "authors": ["Bruce R. Munson", "Theodore H. Okiishi", "Wade W. Huebsch", "Alric P. Rothmayer"],
+        "authors": [
+          "Bruce R. Munson",
+          "Theodore H. Okiishi",
+          "Wade W. Huebsch",
+          "Alric P. Rothmayer"
+        ],
         "year": 2016,
         "publisher": "Wiley",
         "equation_form": "p/γ + V²/(2g) + z = constant",
@@ -482,7 +567,10 @@
       },
       {
         "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
-        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "authors": [
+          "Yunus A. Cengel",
+          "John M. Cimbala"
+        ],
         "year": 2018,
         "publisher": "McGraw-Hill",
         "equation_form": "p/ρ + V²/2 + gz = constant",
@@ -513,7 +601,9 @@
     "sources": [
       {
         "title": "White - Fluid Mechanics, 8th Edition",
-        "authors": ["Frank M. White"],
+        "authors": [
+          "Frank M. White"
+        ],
         "year": 2016,
         "publisher": "McGraw-Hill",
         "equation_form": "p₁/γ + V₁²/2g + z₁ = p₂/γ + V₂²/2g + z₂",
@@ -522,7 +612,10 @@
       },
       {
         "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
-        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "authors": [
+          "Yunus A. Cengel",
+          "John M. Cimbala"
+        ],
         "year": 2018,
         "publisher": "McGraw-Hill",
         "equation_form": "p₁/γ + V₁²/2g + z₁ = p₂/γ + V₂²/2g + z₂",
@@ -546,7 +639,9 @@
     "sources": [
       {
         "title": "White - Fluid Mechanics, 8th Edition",
-        "authors": ["Frank M. White"],
+        "authors": [
+          "Frank M. White"
+        ],
         "year": 2016,
         "publisher": "McGraw-Hill",
         "equation_form": "p₁/γ + V₁²/2g + z₁ = p₂/γ + V₂²/2g + z₂ + h_L",
@@ -555,7 +650,10 @@
       },
       {
         "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
-        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "authors": [
+          "Yunus A. Cengel",
+          "John M. Cimbala"
+        ],
         "year": 2018,
         "publisher": "McGraw-Hill",
         "equation_form": "p₁/γ + V₁²/2g + z₁ = p₂/γ + V₂²/2g + z₂ + h_L",
@@ -578,7 +676,9 @@
     "sources": [
       {
         "title": "White - Fluid Mechanics, 8th Edition",
-        "authors": ["Frank M. White"],
+        "authors": [
+          "Frank M. White"
+        ],
         "year": 2016,
         "publisher": "McGraw-Hill",
         "equation_form": "p/ρ + V²/2 + gz = constant",
@@ -587,7 +687,10 @@
       },
       {
         "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
-        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "authors": [
+          "Yunus A. Cengel",
+          "John M. Cimbala"
+        ],
         "year": 2018,
         "publisher": "McGraw-Hill",
         "equation_form": "p/ρ + V²/2 + gz = constant",
@@ -617,7 +720,10 @@
       },
       {
         "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
-        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "authors": [
+          "Yunus A. Cengel",
+          "John M. Cimbala"
+        ],
         "year": 2018,
         "publisher": "McGraw-Hill",
         "equation_form": "∂φ/∂t + p/ρ + V²/2 + gz = constant",
@@ -632,53 +738,6 @@
     ],
     "validity_range": "Unsteady potential flow"
   },
-  "darcy_weisbach": {
-    "equation": "ΔP = f * (L/D) * (ρ * V² / 2)",
-    "alternate_forms": [
-      "h_f = f * (L/D) * (V² / (2g)) (head loss form)"
-    ],
-    "sources": [
-      {
-        "title": "White - Fluid Mechanics, 8th Edition",
-        "authors": ["Frank M. White"],
-        "year": 2016,
-        "publisher": "McGraw-Hill",
-        "equation_form": "ΔP = f * (L/D) * (ρ * V² / 2)",
-        "page": 342,
-        "notes": "Darcy-Weisbach equation for pipe friction loss"
-      },
-      {
-        "title": "Moody - Friction Factors for Pipe Flow",
-        "authors": ["L. F. Moody"],
-        "year": 1944,
-        "publisher": "ASME Transactions",
-        "equation_form": "h_f = f * (L/D) * (V² / (2g))",
-        "page": 671,
-        "notes": "Original Moody chart paper, head loss form"
-      },
-      {
-        "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
-        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
-        "year": 2018,
-        "publisher": "McGraw-Hill",
-        "equation_form": "ΔP = f * (L/D) * (ρ * V² / 2)",
-        "page": 389,
-        "notes": "Pressure drop form with Darcy friction factor"
-      }
-    ],
-    "assumptions": [
-      "steady, incompressible flow",
-      "fully developed flow",
-      "constant cross-section circular pipe",
-      "constant friction factor along pipe length",
-      "negligible entrance/exit effects"
-    ],
-    "friction_factor_correlations": {
-      "laminar": "f = 64 / Re",
-      "turbulent_smooth": "Blasius: f = 0.316 / Re^0.25 (Re < 10^5)",
-      "turbulent_rough": "Colebrook-White implicit equation",
-      "moody_chart": "Graphical solution for all regimes"
-    },
   "fanning_friction_factor": {
     "equation": "τ_w = f_F (ρ * V² / 2)",
     "alternate_forms": [
@@ -687,7 +746,9 @@
     "sources": [
       {
         "title": "White - Fluid Mechanics, 8th Edition",
-        "authors": ["Frank M. White"],
+        "authors": [
+          "Frank M. White"
+        ],
         "year": 2016,
         "publisher": "McGraw-Hill",
         "equation_form": "τ_w = f_F (ρ * V² / 2)",
@@ -696,7 +757,10 @@
       },
       {
         "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
-        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "authors": [
+          "Yunus A. Cengel",
+          "John M. Cimbala"
+        ],
         "year": 2018,
         "publisher": "McGraw-Hill",
         "equation_form": "τ_w = f_F * (ρ * V² / 2)",
@@ -709,7 +773,8 @@
       "Newtonian fluid",
       "horizontal pipe (no elevation change)"
     ],
-    "relation_to_darcy": "f_D = 4 * f_F (Darcy friction factor is 4× Fanning)",
+    "relation_to_darcy": "f_D = 4 * f_F (Darcy friction factor is 4× Fanning)"
+  },
   "hagen_poiseuille": {
     "equation": "Q = π * Δp * r⁴ / (8 * μ * L)",
     "alternate_forms": [
@@ -718,7 +783,9 @@
     "sources": [
       {
         "title": "White - Fluid Mechanics, 8th Edition",
-        "authors": ["Frank M. White"],
+        "authors": [
+          "Frank M. White"
+        ],
         "year": 2016,
         "publisher": "McGraw-Hill",
         "equation_form": "Q = π * Δp * r⁴ / (8 * μ * L)",
@@ -727,7 +794,10 @@
       },
       {
         "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
-        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "authors": [
+          "Yunus A. Cengel",
+          "John M. Cimbala"
+        ],
         "year": 2018,
         "publisher": "McGraw-Hill",
         "equation_form": "Q = π * Δp * R⁴ / (8 * μ * L)",
@@ -758,7 +828,9 @@
     "sources": [
       {
         "title": "White - Fluid Mechanics, 8th Edition",
-        "authors": ["Frank M. White"],
+        "authors": [
+          "Frank M. White"
+        ],
         "year": 2016,
         "publisher": "McGraw-Hill",
         "equation_form": "f_D = 64 / Re",
@@ -767,7 +839,10 @@
       },
       {
         "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
-        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "authors": [
+          "Yunus A. Cengel",
+          "John M. Cimbala"
+        ],
         "year": 2018,
         "publisher": "McGraw-Hill",
         "equation_form": "f = 64 / Re",
@@ -790,7 +865,9 @@
     "sources": [
       {
         "title": "White - Fluid Mechanics, 8th Edition",
-        "authors": ["Frank M. White"],
+        "authors": [
+          "Frank M. White"
+        ],
         "year": 2016,
         "publisher": "McGraw-Hill",
         "equation_form": "L_e ≈ 0.06 * Re * D",
@@ -799,7 +876,10 @@
       },
       {
         "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
-        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "authors": [
+          "Yunus A. Cengel",
+          "John M. Cimbala"
+        ],
         "year": 2018,
         "publisher": "McGraw-Hill",
         "equation_form": "L_entry ≈ 0.06 * Re * D",
@@ -822,7 +902,9 @@
     "sources": [
       {
         "title": "White - Fluid Mechanics, 8th Edition",
-        "authors": ["Frank M. White"],
+        "authors": [
+          "Frank M. White"
+        ],
         "year": 2016,
         "publisher": "McGraw-Hill",
         "equation_form": "h_L = h_f + h_m",
@@ -831,7 +913,10 @@
       },
       {
         "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
-        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "authors": [
+          "Yunus A. Cengel",
+          "John M. Cimbala"
+        ],
         "year": 2018,
         "publisher": "McGraw-Hill",
         "equation_form": "h_L = h_f + h_m",
@@ -847,7 +932,8 @@
       "h_f": "friction loss (major loss)",
       "h_m": "minor loss (fittings, valves, bends)",
       "h_L": "total head loss"
-    },
+    }
+  },
   "minor_loss_equation": {
     "equation": "h_K = K * (V² / (2g)) (loss coefficient method)",
     "alternate_forms": [
@@ -856,7 +942,9 @@
     "sources": [
       {
         "title": "White - Fluid Mechanics, 8th Edition",
-        "authors": ["Frank M. White"],
+        "authors": [
+          "Frank M. White"
+        ],
         "year": 2016,
         "publisher": "McGraw-Hill",
         "equation_form": "h_K = K * V² / (2g)",
@@ -865,7 +953,10 @@
       },
       {
         "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
-        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "authors": [
+          "Yunus A. Cengel",
+          "John M. Cimbala"
+        ],
         "year": 2018,
         "publisher": "McGraw-Hill",
         "equation_form": "h_L = K * V² / (2g)",
@@ -883,7 +974,8 @@
       "90_debend": "K ≈ 0.9 (standard elbow, r/d=1)",
       "gate_valve": "K ≈ 0.15 (fully open gate valve)",
       "globe_valve": "K ≈ 10 (globe valve, fully open)"
-    },
+    }
+  },
   "flow_regime_transition": {
     "equation": "Re_crit ≈ 2300 (pipe flow)",
     "alternate_forms": [
@@ -893,7 +985,9 @@
     "sources": [
       {
         "title": "White - Fluid Mechanics, 8th Edition",
-        "authors": ["Frank M. White"],
+        "authors": [
+          "Frank M. White"
+        ],
         "year": 2016,
         "publisher": "McGraw-Hill",
         "equation_form": "Re_crit ≈ 2300",
@@ -902,7 +996,10 @@
       },
       {
         "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
-        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "authors": [
+          "Yunus A. Cengel",
+          "John M. Cimbala"
+        ],
         "year": 2018,
         "publisher": "McGraw-Hill",
         "equation_form": "Re_crit ≈ 2300",
@@ -919,7 +1016,8 @@
       "laminar": "Re < 2300",
       "transitional": "2300 ≤ Re ≤ 4000",
       "turbulent": "Re > 4000"
-    },
+    }
+  },
   "hydraulic_diameter": {
     "equation": "D_h = 4 * A_c / P_wetted",
     "alternate_forms": [
@@ -928,7 +1026,9 @@
     "sources": [
       {
         "title": "White - Fluid Mechanics, 8th Edition",
-        "authors": ["Frank M. White"],
+        "authors": [
+          "Frank M. White"
+        ],
         "year": 2016,
         "publisher": "McGraw-Hill",
         "equation_form": "D_h = 4A_c / P_wetted",
@@ -937,7 +1037,10 @@
       },
       {
         "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
-        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "authors": [
+          "Yunus A. Cengel",
+          "John M. Cimbala"
+        ],
         "year": 2018,
         "publisher": "McGraw-Hill",
         "equation_form": "D_h = 4A / P",
@@ -954,7 +1057,8 @@
       "D_h": "hydraulic diameter (m)",
       "A_c": "cross-sectional area (m²)",
       "P_wetted": "wetted perimeter (m)"
-    },
+    }
+  },
   "colebrook_white": {
     "equation": "1/√f = -2 log₁₀[(ε/D)/3.7 + 6.9/Re] (implicit)",
     "alternate_forms": [
@@ -963,7 +1067,9 @@
     "sources": [
       {
         "title": "White - Fluid Mechanics, 8th Edition",
-        "authors": ["Frank M. White"],
+        "authors": [
+          "Frank M. White"
+        ],
         "year": 2016,
         "publisher": "McGraw-Hill",
         "equation_form": "1/√f = -2 log₁₀[(ε/D)/3.7 + 6.9/Re]",
@@ -972,7 +1078,9 @@
       },
       {
         "title": "Moody - Friction Factors for Pipe Flow",
-        "authors": ["L. F. Moody"],
+        "authors": [
+          "L. F. Moody"
+        ],
         "year": 1944,
         "publisher": "ASME Transactions",
         "equation_form": "1/√f = -2 log10(ε/(3.7D) + 6.9/Re)",
@@ -996,7 +1104,10 @@
     "sources": [
       {
         "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
-        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "authors": [
+          "Yunus A. Cengel",
+          "John M. Cimbala"
+        ],
         "year": 2018,
         "publisher": "McGraw-Hill",
         "equation_form": "f = 0.25 / [-log10(ε/(3.7D) + 5.74/Re^0.9)]^2",
@@ -1021,7 +1132,9 @@
     "sources": [
       {
         "title": "White - Fluid Mechanics, 8th Edition",
-        "authors": ["Frank M. White"],
+        "authors": [
+          "Frank M. White"
+        ],
         "year": 2016,
         "publisher": "McGraw-Hill",
         "equation_form": "l = κ * y",
@@ -1030,7 +1143,10 @@
       },
       {
         "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
-        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "authors": [
+          "Yunus A. Cengel",
+          "John M. Cimbala"
+        ],
         "year": 2018,
         "publisher": "McGraw-Hill",
         "equation_form": "l = κ * y",
@@ -1048,43 +1164,7 @@
       "κ": "von Kármán constant ≈ 0.41",
       "y": "distance from wall (m)"
     },
-    "theory": "Relates eddy size to distance from wall in turbulent boundary layer",
-  "law_of_wall_viscous_sublayer": {
-    "equation": "u⁺ = y⁺ (y⁺ < 5)",
-    "alternate_forms": [
-      "u⁺ = y⁺ (viscous sublayer, inner region)"
-    ],
-    "sources": [
-      {
-        "title": "White - Fluid Mechanics, 8th Edition",
-        "authors": ["Frank M. White"],
-        "year": 2016,
-        "publisher": "McGraw-Hill",
-        "equation_form": "u⁺ = y⁺",
-        "page": 73,
-        "notes": "Viscous sublayer law of the wall"
-      },
-      {
-        "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
-        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
-        "year": 2018,
-        "publisher": "McGraw-Hill",
-        "equation_form": "u⁺ = y⁺",
-        "page": 321,
-        "notes": "Linear region near wall"
-      }
-    ],
-    "assumptions": [
-      "y⁺ < 5 (viscous sublayer)",
-      "steady, turbulent flow",
-      "no-slip at wall boundary"
-    ],
-    "definition": "u⁺ = u/uτ (dimensionless velocity), y⁺ = y*uτ/ν (dimensionless distance)",
-    "parameters": {
-      "u⁺": "dimensionless velocity u/uτ",
-      "y⁺": "dimensionless distance y*uτ/ν",
-      "uτ": "friction velocity √(τ_w/ρ)"
-    }
+    "theory": "Relates eddy size to distance from wall in turbulent boundary layer"
   },
   "law_of_wall_viscous_sublayer": {
     "equation": "u⁺ = y⁺ (y⁺ < 5)",
@@ -1094,6 +1174,9 @@
     "sources": [
       {
         "title": "White - Fluid Mechanics, 8th Edition",
+        "authors": [
+          "Frank M. White"
+        ],
         "year": 2016,
         "publisher": "McGraw-Hill",
         "equation_form": "u⁺ = y⁺",
@@ -1102,7 +1185,10 @@
       },
       {
         "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
-        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "authors": [
+          "Yunus A. Cengel",
+          "John M. Cimbala"
+        ],
         "year": 2018,
         "publisher": "McGraw-Hill",
         "equation_form": "u⁺ = y⁺",
@@ -1138,7 +1224,10 @@
       },
       {
         "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
-        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "authors": [
+          "Yunus A. Cengel",
+          "John M. Cimbala"
+        ],
         "year": 2018,
         "publisher": "McGraw-Hill",
         "equation_form": "u⁺ = (1/κ) ln(y⁺) + B",
@@ -1170,7 +1259,9 @@
     "sources": [
       {
         "title": "White - Fluid Mechanics, 8th Edition",
-        "authors": ["Frank M. White"],
+        "authors": [
+          "Frank M. White"
+        ],
         "year": 2016,
         "publisher": "McGraw-Hill",
         "equation_form": "M = V / a",
@@ -1179,7 +1270,10 @@
       },
       {
         "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
-        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "authors": [
+          "Yunus A. Cengel",
+          "John M. Cimbala"
+        ],
         "year": 2018,
         "publisher": "McGraw-Hill",
         "equation_form": "M = V / a",
@@ -1196,7 +1290,8 @@
       "sonic": "M = 1",
       "supersonic": "M > 1",
       "hypersonic": "M > 5"
-    },
+    }
+  },
   "speed_of_sound": {
     "equation": "a = √(γ * R * T)",
     "alternate_forms": [
@@ -1206,7 +1301,9 @@
     "sources": [
       {
         "title": "White - Fluid Mechanics, 8th Edition",
-        "authors": ["Frank M. White"],
+        "authors": [
+          "Frank M. White"
+        ],
         "year": 2016,
         "publisher": "McGraw-Hill",
         "equation_form": "a = √(γ * R * T)",
@@ -1215,7 +1312,10 @@
       },
       {
         "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
-        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "authors": [
+          "Yunus A. Cengel",
+          "John M. Cimbala"
+        ],
         "year": 2018,
         "publisher": "McGraw-Hill",
         "equation_form": "a = √(γ * R * T)",
@@ -1233,7 +1333,8 @@
       "γ": "specific heat ratio cp/cv",
       "R": "gas constant (J/kg·K)",
       "T": "absolute temperature (K)"
-    },
+    }
+  },
   "isentropic_relations": {
     "equation": "p/p0 = (T/T0)^(γ/(γ-1)) = (ρ/ρ0)^γ",
     "alternate_forms": [
@@ -1243,7 +1344,9 @@
     "sources": [
       {
         "title": "White - Fluid Mechanics, 8th Edition",
-        "authors": ["Frank M. White"],
+        "authors": [
+          "Frank M. White"
+        ],
         "year": 2016,
         "publisher": "McGraw-Hill",
         "equation_form": "p/p0 = (T/T0)^(γ/(γ-1))",
@@ -1252,7 +1355,10 @@
       },
       {
         "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
-        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "authors": [
+          "Yunus A. Cengel",
+          "John M. Cimbala"
+        ],
         "year": 2018,
         "publisher": "McGraw-Hill",
         "equation_form": "p/p0 = (T/T0)^(γ/(γ-1)) = (ρ/ρ0)^γ",
@@ -1272,7 +1378,8 @@
       "T0": "stagnation temperature",
       "ρ": "density",
       "ρ0": "stagnation density"
-    },
+    }
+  },
   "isentropic_area_mach": {
     "equation": "A/A* = (1/M) [(2/(γ+1)) (1 + (γ-1)/2 M²)]^((γ+1)/(2(γ-1)))",
     "alternate_forms": [
@@ -1281,7 +1388,9 @@
     "sources": [
       {
         "title": "White - Fluid Mechanics, 8th Edition",
-        "authors": ["Frank M. White"],
+        "authors": [
+          "Frank M. White"
+        ],
         "year": 2016,
         "publisher": "McGraw-Hill",
         "equation_form": "A/A* = (1/M) [(2/(γ+1)) (1 + (γ-1)/2 M²)]^((γ+1)/(2(γ-1)))",
@@ -1290,7 +1399,10 @@
       },
       {
         "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
-        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "authors": [
+          "Yunus A. Cengel",
+          "John M. Cimbala"
+        ],
         "year": 2018,
         "publisher": "McGraw-Hill",
         "equation_form": "A/A* = (1/M) [(2/(γ+1)) (1 + (γ-1)/2 M²)]^((γ+1)/(2(γ-1)))",
@@ -1315,7 +1427,9 @@
     "sources": [
       {
         "title": "White - Fluid Mechanics, 8th Edition",
-        "authors": ["Frank M. White"],
+        "authors": [
+          "Frank M. White"
+        ],
         "year": 2016,
         "publisher": "McGraw-Hill",
         "equation_form": "ν(M) = √((γ+1)/(γ-1)) arctan√((γ-1)/(γ+1)(M²-1)) - arctan√(M²-1)",
@@ -1324,7 +1438,10 @@
       },
       {
         "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
-        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
+        "authors": [
+          "Yunus A. Cengel",
+          "John M. Cimbala"
+        ],
         "year": 2018,
         "publisher": "McGraw-Hill",
         "equation_form": "ν(M) = √((γ+1)/(γ-1)) arctan√((γ-1)/(γ+1)(M²-1)) - arctan√(M²-1)",
@@ -1344,37 +1461,5 @@
       "γ": "specific heat ratio"
     },
     "application": "Determine expansion fan turning angle for supersonic flow turning"
-  }
-}
-    "equation": "L_e ≈ 4.4 * Re^(1/6) * D (turbulent flow)",
-    "alternate_forms": [
-      "L_e ≈ 10 * D (practical rule of thumb for turbulent)"
-    ],
-    "sources": [
-      {
-        "title": "White - Fluid Mechanics, 8th Edition",
-        "authors": ["Frank M. White"],
-        "year": 2016,
-        "publisher": "McGraw-Hill",
-        "equation_form": "L_e ≈ 4.4 * Re^(1/6) * D",
-        "page": 552,
-        "notes": "Entrance length for turbulent flow"
-      },
-      {
-        "title": "Cengel & Cimbala - Fluid Mechanics: Fundamentals and Applications, 4th Edition",
-        "authors": ["Yunus A. Cengel", "John M. Cimbala"],
-        "year": 2018,
-        "publisher": "McGraw-Hill",
-        "equation_form": "L_entry ≈ 4.4 * Re^(1/6) * D",
-        "page": 385,
-        "notes": "Turbulent entry length"
-      }
-    ],
-    "assumptions": [
-      "fully developed flow upstream",
-      "turbulent flow (Re > 4000)",
-      "circular pipe"
-    ],
-    "definition": "Distance from pipe inlet to fully developed flow"
   }
 }

@@ -1,337 +1,324 @@
 #!/usr/bin/env python3
-"""
-Dimensional analysis checker for engineering equations.
+"""Check equation dimensions using SI base dimensions."""
 
-Verifies that equations are dimensionally consistent by analyzing
-the dimensions of each variable in the equation.
-
-Usage:
-    python dimensional_check.py --equation "rho*V*D/mu" --expected dimensionless
-    python dimensional_check.py --equation "f*L/D*rho*V^2/2" --expected "Pa"
-"""
-
-import sys
-import json
 import argparse
+import json
 import re
-from typing import Dict, List, Tuple, Optional, Any
-from units import get_dimensions, check_dimensionless
+import sys
+from typing import Dict, Optional, Tuple
+
+from units import get_dimensions
+
+Dimensions = Dict[str, float]
 
 
-# Standard variable dimensions (SI base: L, M, T, Θ, N, I, J)
-# L=length, M=mass, T=time, Θ=temperature, N=amount, I=current, J=luminous
-#
-# FALLBACK_VARIABLES: When a variable is not found in VARIABLE_DIMENSIONS,
-# this map provides dimensions based on the "base" variable name. For example:
-# "mu_t" (turbulent viscosity) falls back to "mu" (dynamic viscosity).
-# "epsilon_turb" (dissipation rate) falls back to "epsilon".
-# "k_turb" (turbulent kinetic energy) falls back to "k" (if added).
-# "C_D_0" falls back to "C_D".
-FALLBACK_VARIABLES = {
-    "mu_t": "mu",      # turbulent viscosity -> dynamic viscosity
-    "epsilon_turb": "epsilon",  # dissipation rate -> loss coefficient
-    "k_turb": None,    # turbulent kinetic energy (would need "k" added)
-    "C_D_0": "C_D",    # zero-lift drag -> drag coefficient
-    "CL_max": "C_L",   # max lift -> lift coefficient
-}
-
-# Map base variable names to their dimension keys for fallback lookup
-VARIABLE_BASE_MAP = {
-    "mu_t": "mu",
-    "epsilon_turb": "epsilon",
-    "k_turb": "k",
-    "C_D_0": "C_D",
-    "CL_max": "C_L",
-}
-
-# Standard variable dimensions (SI base: L, M, T, Θ, N, I, J)
-# L=length, M=mass, T=time, Θ=temperature, N=amount, I=current, J=luminous
-VARIABLE_DIMENSIONS = {
-    # Fluid properties
-    "rho": {"M": 1, "L": -3},           # density kg/m³
-    "mu": {"M": 1, "L": -1, "T": -1},   # dynamic viscosity Pa·s = kg/(m·s)
-    "nu": {"L": 2, "T": -1},            # kinematic viscosity m²/s
-    "V": {"L": 1, "T": -1},             # velocity m/s
-    "D": {"L": 1},                      # diameter m
-    "L": {"L": 1},                      # length m
-    "f": {},                            # friction factor (dimensionless)
-    "Re": {},                           # Reynolds number (dimensionless)
-    # Pressure/Force
-    "P": {"M": 1, "L": -1, "T": -2},    # pressure Pa = N/m² = kg/(m·s²)
-    "dP": {"M": 1, "L": -1, "T": -2},   # pressure drop
+VARIABLE_DIMENSIONS: Dict[str, Dimensions] = {
+    "rho": {"M": 1, "L": -3},
+    "mu": {"M": 1, "L": -1, "T": -1},
+    "nu": {"L": 2, "T": -1},
+    "V": {"L": 1, "T": -1},
+    "V1": {"L": 1, "T": -1},
+    "V2": {"L": 1, "T": -1},
+    "D": {"L": 1},
+    "D1": {"L": 1},
+    "D2": {"L": 1},
+    "L": {"L": 1},
+    "x": {"L": 1},
+    "r": {"L": 1},
+    "f": {},
+    "Re": {},
+    "Re_x": {},
+    "M": {},
+    "gamma": {},
+    "pi": {},
+    "theta": {},
+    "Theta": {"Theta": 1},
+    "P": {"M": 1, "L": -1, "T": -2},
+    "P1": {"M": 1, "L": -1, "T": -2},
+    "P2": {"M": 1, "L": -1, "T": -2},
+    "dP": {"M": 1, "L": -1, "T": -2},
     "deltaP": {"M": 1, "L": -1, "T": -2},
-    # Energy/Head
-    "z": {"L": 1},                      # elevation m
-    "g": {"L": 1, "T": -2},             # gravity m/s²
-    "h": {"L": 1},                      # head m
-    # Thermodynamics
-    "T": {"Θ": 1},                      # temperature K
-    "Cp": {"L": 2, "T": -2, "Θ": -1},   # specific heat J/(kg·K)
-    "k": {"M": 1, "L": 1, "T": -3, "Θ": -1},  # thermal conductivity W/(m·K)
-    # Additional fluid dynamics variables
-    "sigma": {"M": 1, "T": -2},         # surface tension N/m = kg/s²
-    "r": {"L": 1},                      # radius m
-    "A_c": {"L": 2},                    # cross-sectional area m²
-    "P_wetted": {"L": 1},               # wetted perimeter m
-    "Q": {"L": 3, "T": -1},             # volume flow rate m³/s
-    "epsilon": {"L": 1},                # roughness height m
-    "V_theta": {"L": 1, "T": -1},       # tangential velocity m/s
-    "U": {"L": 1, "T": -1},             # speed m/s
-    "omega": {"T": -1},                 # angular velocity 1/s (rad/s)
-    "Gamma": {"L": 2, "T": -1},         # circulation m²/s
-    "delta": {"L": 1},                  # boundary layer thickness m
-    "y_plus": {},                       # dimensionless wall distance
-    "k_turb": {"L": 2, "T": -2},       # turbulent kinetic energy m²/s²
-    "epsilon_turb": {"L": 2, "T": -3}, # dissipation rate m²/s³
-    "mu_t": {"M": 1, "L": -1, "T": -1}, # turbulent viscosity Pa·s
-    "C_f": {},                          # skin friction coefficient (dimensionless)
-    "C_L": {},                          # lift coefficient (dimensionless)
-    "C_D": {},                          # drag coefficient (dimensionless)
-    "e": {},                            # span efficiency factor (dimensionless)
-    "alpha": {},                        # angle of attack (dimensionless)
-    "AR": {},                           # aspect ratio (dimensionless)
-    "b": {"L": 1},                      # wingspan m
-    "S": {"L": 2},                      # wing area m²
-    "FD": {"M": 1, "L": 1, "T": -2},   # drag force N = kg·m/s²
-    "FL": {"M": 1, "L": 1, "T": -2},   # lift force N = kg·m/s²
-    "CL_max": {},                       # max lift coefficient (dimensionless)
-    "CD_0": {},                         # zero-lift drag coefficient (dimensionless)
+    "z": {"L": 1},
+    "z1": {"L": 1},
+    "z2": {"L": 1},
+    "g": {"L": 1, "T": -2},
+    "h": {"L": 1},
+    "T": {"Theta": 1},
+    "T0": {"Theta": 1},
+    "a": {"L": 1, "T": -1},
+    "R": {"L": 2, "T": -2, "Theta": -1},
+    "Cp": {"L": 2, "T": -2, "Theta": -1},
+    "cp": {"L": 2, "T": -2, "Theta": -1},
+    "k": {"M": 1, "L": 1, "T": -3, "Theta": -1},
+    "sigma": {"M": 1, "T": -2},
+    "A": {"L": 2},
+    "A_c": {"L": 2},
+    "A1": {"L": 2},
+    "A2": {"L": 2},
+    "A_star": {"L": 2},
+    "P_wetted": {"L": 1},
+    "Q": {"L": 3, "T": -1},
+    "epsilon": {"L": 1},
+    "epsilon_turb": {"L": 2, "T": -3},
+    "k_turb": {"L": 2, "T": -2},
+    "mu_t": {"M": 1, "L": -1, "T": -1},
+    "V_theta": {"L": 1, "T": -1},
+    "U": {"L": 1, "T": -1},
+    "omega": {"T": -1},
+    "Gamma": {"L": 2, "T": -1},
+    "delta": {"L": 1},
+    "y_plus": {},
+    "C_f": {},
+    "C_L": {},
+    "C_D": {},
+    "CD": {},
+    "e": {},
+    "alpha": {},
+    "AR": {},
+    "b": {"L": 1},
+    "S": {"L": 2},
+    "FD": {"M": 1, "L": 1, "T": -2},
+    "FL": {"M": 1, "L": 1, "T": -2},
+    "F_D": {"M": 1, "L": 1, "T": -2},
+    "F_L": {"M": 1, "L": 1, "T": -2},
+    "D_AB": {"L": 2, "T": -1},
 }
 
+# Only aliases with the same physical dimensions belong here. Variables whose
+# meanings differ by dimensions are declared explicitly above.
+FALLBACK_VARIABLES = {
+    "CL_max": "C_L",
+    "C_D_0": "C_D",
+}
 
-def parse_equation(equation: str) -> Dict[str, int]:
-    """
-    Parse equation and return combined dimensions.
-    Handles *, /, ^ operators with proper precedence.
-    Returns dict of base dimension -> exponent.
-    """
-    # Remove spaces
-    eq = equation.replace(" ", "")
+GREEK_REPLACEMENTS = {
+    "ρ": "rho", "μ": "mu", "ν": "nu", "γ": "gamma", "σ": "sigma",
+    "δ": "delta", "ΔP": "deltaP", "Δp": "deltaP", "θ": "theta",
+    "Θ": "Theta", "π": "pi",
+}
+SUPERSCRIPTS = str.maketrans({"⁰": "0", "¹": "1", "²": "2", "³": "3",
+                              "⁴": "4", "⁵": "5", "⁶": "6", "⁷": "7",
+                              "⁸": "8", "⁹": "9", "⁻": "-", "⁺": "+"})
 
-    # Split by = if present (take RHS)
-    if "=" in eq:
-        eq = eq.split("=")[1]
 
-    # Tokenize: variables, numbers, operators, parentheses
-    # Pattern matches: variable names, numbers, ^, *, /, (, )
-    tokens = re.findall(r'[a-zA-Z_][a-zA-Z0-9_]*|\d+\.?\d*|\^|\*|/|\(|\)', eq)
+class DimensionalAnalysisError(ValueError):
+    """Raised for malformed expressions or unknown variables."""
 
-    # Convert to postfix notation (Shunting Yard algorithm) for proper precedence
-    # Precedence: ^ (highest, right-associative), * and / (left-associative)
-    output = []
-    operators = []
 
-    precedence = {"^": 3, "*": 2, "/": 2}
-    right_assoc = {"^"}
+def _clean(dims: Dimensions) -> Dimensions:
+    return {key: value for key, value in dims.items() if abs(value) > 1e-12}
 
-    def apply_operator(op: str, stack: List[Dict[str, int]]) -> Dict[str, int]:
-        """Apply operator to top items on stack."""
-        if op == "^":
-            # Exponentiation: pop base and exponent
-            if len(stack) < 2:
-                return {}
-            exp = stack.pop()
-            base = stack.pop()
-            # Exponent should be a number (dimensionless)
-            if not exp:
-                # dimensionless exponent - multiply base dimensions by exponent value
-                return base
-            # For dimensional analysis, we assume exponent is dimensionless number
-            # We can't evaluate it here, so we just return base (exponent handled elsewhere)
-            return base
-        elif op in ("*", "/"):
-            if len(stack) < 2:
-                return {}
-            right = stack.pop()
-            left = stack.pop()
-            if op == "*":
-                return multiply_dims(left, right)
+
+def _combine(left: Dimensions, right: Dimensions, sign: float) -> Dimensions:
+    result = dict(left)
+    for base, exponent in right.items():
+        result[base] = result.get(base, 0) + sign * exponent
+    return _clean(result)
+
+
+def _scale(dims: Dimensions, factor: float) -> Dimensions:
+    return _clean({base: exponent * factor for base, exponent in dims.items()})
+
+
+class _ExpressionParser:
+    def __init__(self, expression: str):
+        self.expression = self._normalize(expression)
+        self.tokens = re.findall(r"[A-Za-z_][A-Za-z0-9_]*|(?:\d+(?:\.\d*)?|\.\d+)|\*\*|[()+\-*/^,]", self.expression)
+        residue = re.sub(r"\s+", "", re.sub(r"[A-Za-z_][A-Za-z0-9_]*|(?:\d+(?:\.\d*)?|\.\d+)|\*\*|[()+\-*/^,]", "", self.expression))
+        if residue:
+            raise DimensionalAnalysisError(f"Unsupported token(s): {residue}")
+        self.position = 0
+
+    @staticmethod
+    def _normalize(expression: str) -> str:
+        result = expression.translate(SUPERSCRIPTS)
+        # Replace longer Greek symbols first (for example ΔP before P).
+        for symbol in sorted(GREEK_REPLACEMENTS, key=len, reverse=True):
+            result = result.replace(symbol, GREEK_REPLACEMENTS[symbol])
+        result = result.replace("≈", "=").replace("·", "*")
+        return result
+
+    def peek(self) -> Optional[str]:
+        return self.tokens[self.position] if self.position < len(self.tokens) else None
+
+    def take(self) -> str:
+        token = self.peek()
+        if token is None:
+            raise DimensionalAnalysisError("Unexpected end of expression")
+        self.position += 1
+        return token
+
+    def parse(self) -> Tuple[Dimensions, Optional[float]]:
+        dimensions, value = self.parse_sum()
+        if self.peek() is not None:
+            raise DimensionalAnalysisError(f"Unexpected token '{self.peek()}'")
+        return dimensions, value
+
+    def parse_sum(self) -> Tuple[Dimensions, Optional[float]]:
+        left_dims, left_value = self.parse_product()
+        while self.peek() in ("+", "-"):
+            op = self.take()
+            right_dims, right_value = self.parse_product()
+            if left_dims != right_dims:
+                raise DimensionalAnalysisError("Addition/subtraction requires matching dimensions")
+            if left_value is None or right_value is None:
+                left_value = None
             else:
-                return divide_dims(left, right)
-        return {}
+                left_value = left_value + right_value if op == "+" else left_value - right_value
+        return left_dims, left_value
 
-    def multiply_dims(a: Dict[str, int], b: Dict[str, int]) -> Dict[str, int]:
-        result = a.copy()
-        for base, exp in b.items():
-            result[base] = result.get(base, 0) + exp
-        return {k: v for k, v in result.items() if v != 0}
-
-    def divide_dims(a: Dict[str, int], b: Dict[str, int]) -> Dict[str, int]:
-        result = a.copy()
-        for base, exp in b.items():
-            result[base] = result.get(base, 0) - exp
-        return {k: v for k, v in result.items() if v != 0}
-
-    # For dimensional analysis, we can simplify by directly parsing
-    # Since we only care about dimensions, not values, we can track
-    # numerator and denominator separately with exponent handling
-
-    # Simple approach: recursively parse with proper handling of ^
-    # We'll use a recursive descent parser
-
-    class Parser:
-        def __init__(self, tokens):
-            self.tokens = tokens
-            self.pos = 0
-
-        def peek(self):
-            return self.tokens[self.pos] if self.pos < len(self.tokens) else None
-
-        def consume(self):
-            tok = self.peek()
-            self.pos += 1
-            return tok
-
-        def parse(self) -> Dict[str, int]:
-            return self.parse_expression()
-
-        def parse_expression(self) -> Dict[str, int]:
-            """Parse addition/subtraction (not used in dimensional analysis, but for completeness)"""
-            return self.parse_term()
-
-        def parse_term(self) -> Dict[str, int]:
-            """Parse multiplication/division"""
-            left = self.parse_factor()
-            while self.peek() in ("*", "/"):
-                op = self.consume()
-                right = self.parse_factor()
-                if op == "*":
-                    left = multiply_dims(left, right)
-                else:
-                    left = divide_dims(left, right)
-            return left
-
-        def parse_factor(self) -> Dict[str, int]:
-            """Parse exponentiation (right-associative)"""
-            left = self.parse_primary()
-            if self.peek() == "^":
-                self.consume()  # consume ^
-                # For exponentiation, we need to parse the exponent as a primary to get its value
-                # Save position to check if exponent is a number
-                exp_start = self.pos
-                right = self.parse_primary()
-                # Check if the exponent was a number
-                if exp_start < len(self.tokens) and re.match(r'\d+\.?\d*', self.tokens[exp_start]):
-                    # Exponent is a number - multiply dimensions by this value
-                    try:
-                        exp_val = float(self.tokens[exp_start])
-                        # Multiply all dimensions by exponent value
-                        left = {k: int(v * exp_val) for k, v in left.items()}
-                    except (ValueError, TypeError):
-                        pass  # If we can't parse, just use base dimensions
-                return left
-            return left
-
-        def parse_primary(self) -> Dict[str, int]:
-            """Parse variables, numbers, parentheses"""
-            tok = self.peek()
-            if tok is None:
-                return {}
-            if tok == "(":
-                self.consume()
-                result = self.parse_expression()
-                if self.peek() == ")":
-                    self.consume()
-                return result
-            elif tok == ")":
-                return {}
-            elif re.match(r'\d+\.?\d*', tok):
-                self.consume()
-                return {}  # numbers are dimensionless
+    def parse_product(self) -> Tuple[Dimensions, Optional[float]]:
+        left_dims, left_value = self.parse_power()
+        while self.peek() in ("*", "/"):
+            op = self.take()
+            right_dims, right_value = self.parse_power()
+            sign = 1 if op == "*" else -1
+            left_dims = _combine(left_dims, right_dims, sign)
+            if left_value is None or right_value is None or (op == "/" and right_value == 0):
+                left_value = None
             else:
-                # Variable
-                self.consume()
-                var = tok
-                dims = VARIABLE_DIMENSIONS.get(var)
-                if dims is None:
-                    # Try fallback: check if there's a "base" variable version
-                    base_var = VARIABLE_BASE_MAP.get(var)
-                    if base_var and base_var in VARIABLE_DIMENSIONS:
-                        # Use the base variable's dimensions with a note
-                        dims = VARIABLE_DIMENSIONS[base_var]
-                        print(f"Note: Using dimensions for '{base_var}' as fallback for '{var}'", file=sys.stderr)
-                    else:
-                        try:
-                            dims = get_dimensions(var)
-                        except Exception:
-                            dims = {}
-                            print(f"Warning: Unknown variable '{var}', treating as dimensionless", file=sys.stderr)
-                return dims.copy() if dims else {}
+                left_value = left_value * right_value if op == "*" else left_value / right_value
+        return left_dims, left_value
 
-    parser = Parser(tokens)
-    return parser.parse()
+    def parse_power(self) -> Tuple[Dimensions, Optional[float]]:
+        dimensions, value = self.parse_unary()
+        if self.peek() in ("^", "**"):
+            self.take()
+            exponent_dims, exponent = self.parse_unary()
+            if exponent_dims or exponent is None:
+                raise DimensionalAnalysisError("Exponent must be a numeric dimensionless value")
+            dimensions = _scale(dimensions, exponent)
+            value = value ** exponent if value is not None else None
+        return dimensions, value
+
+    def parse_unary(self) -> Tuple[Dimensions, Optional[float]]:
+        if self.peek() in ("+", "-"):
+            sign = -1 if self.take() == "-" else 1
+            dimensions, value = self.parse_unary()
+            return dimensions, value * sign if value is not None else None
+        return self.parse_primary()
+
+    def parse_primary(self) -> Tuple[Dimensions, Optional[float]]:
+        token = self.take()
+        if token == "(":
+            dimensions, value = self.parse_sum()
+            if self.take() != ")":
+                raise DimensionalAnalysisError("Expected closing parenthesis")
+            return dimensions, value
+        if re.fullmatch(r"(?:\d+(?:\.\d*)?|\.\d+)", token):
+            return {}, float(token)
+        if token == "," or token in (")", "*", "/", "^", "**", "+", "-"):
+            raise DimensionalAnalysisError(f"Unexpected token '{token}'")
+        if self.peek() == "(":
+            self.take()
+            dimensions, _ = self.parse_sum()
+            if self.take() != ")":
+                raise DimensionalAnalysisError("Expected closing parenthesis")
+            if token == "sqrt":
+                return _scale(dimensions, 0.5), None
+            if token.lower() in ("ln", "log", "log10", "exp", "sin", "cos", "tan"):
+                if dimensions:
+                    raise DimensionalAnalysisError(f"{token} requires a dimensionless argument")
+                return {}, None
+            raise DimensionalAnalysisError(f"Unsupported function '{token}'")
+        variable = token
+        dimensions = VARIABLE_DIMENSIONS.get(variable)
+        if dimensions is None:
+            fallback = FALLBACK_VARIABLES.get(variable)
+            dimensions = VARIABLE_DIMENSIONS.get(fallback) if fallback else None
+        if dimensions is None:
+            raise DimensionalAnalysisError(f"Unknown variable '{variable}'")
+        return dict(dimensions), None
 
 
-def format_dimensions(dims: Dict[str, int]) -> str:
-    """Format dimensions as a readable string."""
+def parse_equation(equation: str) -> Dimensions:
+    """Return dimensions of the right-hand side and check both equation sides."""
+    normalized = _ExpressionParser._normalize(equation)
+    if "=" in normalized:
+        left_text, right_text = normalized.split("=", 1)
+        left_dims, _ = _ExpressionParser(left_text).parse()
+        right_dims, _ = _ExpressionParser(right_text).parse()
+        if left_dims != right_dims:
+            raise DimensionalAnalysisError("Left and right sides have different dimensions")
+        return right_dims
+    return _ExpressionParser(normalized).parse()[0]
+
+
+def format_dimensions(dims: Dimensions) -> str:
     if not dims:
         return "dimensionless"
+    labels = {"M": "M", "L": "L", "T": "T", "Theta": "Θ", "N": "N", "I": "I", "J": "J"}
+    order = ["M", "L", "T", "Theta", "N", "I", "J"]
     parts = []
-    for base in ["M", "L", "T", "Θ", "N", "I", "J"]:
+    for base in order:
         if base in dims:
-            exp = dims[base]
-            if exp == 1:
-                parts.append(base)
-            else:
-                parts.append(f"{base}^{exp}")
+            exponent = dims[base]
+            shown = int(exponent) if float(exponent).is_integer() else exponent
+            parts.append(labels[base] if exponent == 1 else f"{labels[base]}^{shown}")
     return " ".join(parts)
 
 
-def expected_dimensions(target: str) -> Dict[str, int]:
-    """Get expected dimensions for a target quantity."""
+def expected_dimensions(target: str) -> Dimensions:
     if target.lower() in ("dimensionless", "1", ""):
         return {}
-    if target in VARIABLE_DIMENSIONS:
-        return VARIABLE_DIMENSIONS[target]
-    # Try to get from units module, but convert pint format to our format
+    variable = target.strip()
+    if variable in VARIABLE_DIMENSIONS:
+        return dict(VARIABLE_DIMENSIONS[variable])
+    fallback = FALLBACK_VARIABLES.get(variable)
+    if fallback:
+        return dict(VARIABLE_DIMENSIONS[fallback])
+    common_units = {
+        "Pa": {"M": 1, "L": -1, "T": -2},
+        "N": {"M": 1, "L": 1, "T": -2},
+        "J": {"M": 1, "L": 2, "T": -2},
+        "W": {"M": 1, "L": 2, "T": -3},
+    }
+    if variable in common_units:
+        return dict(common_units[variable])
+    unit_aliases = {"Pa": "pascal", "N": "newton", "J": "joule", "W": "watt"}
+    unit = unit_aliases.get(variable, variable)
     try:
-        dims = get_dimensions(target)
-        # Convert pint dimension names to our format
-        conversion = {
-            "[mass]": "M",
-            "[length]": "L",
-            "[time]": "T",
-            "[temperature]": "Θ",
-            "[amount]": "N",
-            "[current]": "I",
-            "[luminous]": "J",
-        }
-        converted = {}
-        for k, v in dims.items():
-            converted[conversion.get(k, k)] = v
-        return converted
-    except Exception:
-        return {}
+        dims = get_dimensions(unit)
+    except Exception as exc:
+        raise DimensionalAnalysisError(f"Unknown expected dimension or unit '{target}'") from exc
+    conversion = {
+        "[mass]": "M", "[length]": "L", "[time]": "T", "[temperature]": "Theta",
+        "[amount]": "N", "[current]": "I", "[luminosity]": "J", "[luminous intensity]": "J",
+    }
+    return {conversion.get(key, key): value for key, value in dims.items() if value}
 
 
-def check_equation(equation: str, expected: str) -> Dict[str, Any]:
-    """Check dimensional consistency of an equation."""
-    result_dims = parse_equation(equation)
-    expected_dims = expected_dimensions(expected)
-
-    match = result_dims == expected_dims
-
+def check_equation(equation: str, expected: str) -> Dict[str, object]:
+    try:
+        computed = parse_equation(equation)
+        target = expected_dimensions(expected)
+        match = computed == target
+        error = None
+    except DimensionalAnalysisError as exc:
+        computed = {}
+        target = {}
+        match = False
+        error = str(exc)
     return {
         "equation": equation,
         "expected": expected,
-        "expected_dimensions": format_dimensions(expected_dims),
-        "computed_dimensions": format_dimensions(result_dims),
-        "computed_raw": result_dims,
-        "expected_raw": expected_dims,
+        "expected_dimensions": format_dimensions(target),
+        "computed_dimensions": format_dimensions(computed),
+        "computed_raw": computed,
+        "expected_raw": target,
         "match": match,
+        "error": error,
     }
 
 
-def main():
-    parser = argparse.ArgumentParser(description="Dimensional analysis checker")
-    parser.add_argument("--equation", required=True, help="Equation to check (e.g., 'rho*V*D/mu')")
-    parser.add_argument("--expected", required=True, help="Expected result (e.g., 'dimensionless', 'Pa', 'Re')")
-    parser.add_argument("--verbose", action="store_true", help="Verbose output")
-
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Check dimensional consistency of an equation")
+    parser.add_argument("--equation", required=True, help="Equation to check")
+    parser.add_argument("--expected", required=True, help="Expected unit or dimension (for example Pa)")
+    parser.add_argument("--verbose", action="store_true", help="Print structured JSON")
     args = parser.parse_args()
 
     result = check_equation(args.equation, args.expected)
-
     if args.verbose:
         print(json.dumps(result, indent=2))
     else:
@@ -340,10 +327,9 @@ def main():
         print(f"  Equation: {result['equation']}")
         print(f"  Expected: {result['expected_dimensions']}")
         print(f"  Computed: {result['computed_dimensions']}")
-        if not result["match"]:
-            print(f"  Computed raw: {result['computed_raw']}")
-            print(f"  Expected raw: {result['expected_raw']}")
-        sys.exit(0 if result["match"] else 1)
+        if result["error"]:
+            print(f"  Error: {result['error']}")
+    sys.exit(0 if result["match"] else 1)
 
 
 if __name__ == "__main__":

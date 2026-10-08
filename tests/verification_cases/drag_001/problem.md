@@ -1,4 +1,4 @@
-# Drag Force Calculation - Test Case 001
+# Drag Force Calculator Example
 
 ## Problem Statement
 
@@ -19,4 +19,4 @@ A car is traveling at 30 m/s. The car has a frontal area of 2.5 m² and a drag c
 
 ## Reported Result
 
-F_D = 13770.5625 N (reported by student)
+F_D = 413.4375 N (reported by student)

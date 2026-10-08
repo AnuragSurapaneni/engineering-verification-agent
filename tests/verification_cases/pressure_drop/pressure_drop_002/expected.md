@@ -13,7 +13,7 @@
 - physical_sanity: FAIL (reported value is 2x expected, suggests f=0.04 was used)
 
 ## Expected Verdict
-FAIL
+NOT VERIFIED
 
 ## Expected Confidence
 HIGH

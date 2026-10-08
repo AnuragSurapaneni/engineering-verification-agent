@@ -36,6 +36,6 @@ P₂ = P₁ + ½ρ(V₁² - V₂²)
 ## Expected Result
 
 - V₂ = 3 × (0.1/0.05)² = 12 m/s
-- P₂ = 200,000 + 0.5 × 997 × (3² - 12²) = 200,000 - 69,793.5 ≈ 130.2 kPa
+- P₂ = 200,000 + 0.5 × 997 × (3² - 12²) = 200,000 - 67,297.5 = 132,702.5 Pa ≈ 132.7 kPa
 
 Pressure drops as velocity increases (Venturi effect).

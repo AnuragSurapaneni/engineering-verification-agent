@@ -13,7 +13,7 @@ Re ≈ 127,243 (turbulent)
 - physical_interpretation: PASS (Re > 4000 → turbulent)
 
 ## Expected Verdict
-PASS
+VERIFIED
 
 ## Expected Confidence
 HIGH
