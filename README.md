@@ -37,9 +37,11 @@ python scripts/compare.py --computed 127243 --reported 127000 --tolerance 0.01
 engineering-verification-agent/
 ├── .claude/
 │   └── skills/
-│       └── engineering-verification/
-│           ├── SKILL.md          # Verification methodology
-│           └── scripts/          # Workflow orchestrator and case runner
+│       ├── engineering-verification/
+│       │   ├── SKILL.md          # Full calculation verification workflow
+│       │   └── scripts/          # Workflow orchestrator and case runner
+│       └── equation-audit/
+│           └── SKILL.md          # Contextual equation review and confidence table
 ├── problems/                     # Engineering problems to verify
 │   ├── reynolds_number.md
 │   ├── pressure_drop.md
@@ -112,21 +114,22 @@ pip install pint
 
 ## Use as a Codex or Claude Code Skill
 
-The verification skill and its helper scripts are included in this repository.
-Install `pint` as shown above before asking the skill to run calculations.
+Both skills are included in this repository. Install `pint` as shown above
+before asking the engineering-verification skill to run calculations.
 
 ### Codex
 
 Codex discovers repository skills in `.agents/skills`. From the repository
-root, copy the bundled skill there once:
+root, copy both bundled skills there:
 
 ```bash
 mkdir -p .agents/skills
 cp -R .claude/skills/engineering-verification .agents/skills/
+cp -R .claude/skills/equation-audit .agents/skills/
 ```
 
-Start Codex from this repository. Invoke the skill with `$engineering-verification`
-or choose it from `/skills`, for example:
+Start Codex from this repository. Invoke either skill with `$engineering-verification`
+or `$equation-audit`, or choose one from `/skills`. For example:
 
 ```text
 $engineering-verification Check this Reynolds number calculation: rho=1.177 kg/m^3, V=20 m/s, D=0.1 m, mu=1.85e-5 Pa*s. The reported result is 127000.
@@ -135,18 +138,30 @@ $engineering-verification Check this Reynolds number calculation: rho=1.177 kg/m
 See the [Codex skills guide](https://developers.openai.com/codex/skills/) for
 skill discovery and invocation details.
 
+To audit equations already present in the conversation, use:
+
+```text
+$equation-audit Review the equations above for correctness and summarize each verdict and confidence in a table.
+```
+
 ### Claude Code
 
-The skill is already installed as a project skill at
-`.claude/skills/engineering-verification/`. Start Claude Code from the
-repository root and invoke it at the prompt with `/engineering-verification`:
+Both skills are available as project skills under `.claude/skills/`. Start
+Claude Code from the repository root and invoke a skill at the prompt with its
+slash command, such as `/engineering-verification`:
 
 ```text
 /engineering-verification Check this Reynolds number calculation: rho=1.177 kg/m^3, V=20 m/s, D=0.1 m, mu=1.85e-5 Pa*s. The reported result is 127000.
 ```
 
-Claude Code can also load it automatically for a matching engineering
-verification request. See the [Claude Code skills guide](https://code.claude.com/docs/en/skills).
+Claude Code can also load either skill automatically when the request matches
+its description. See the [Claude Code skills guide](https://code.claude.com/docs/en/skills).
+
+To review equations already present in the conversation, invoke:
+
+```text
+/equation-audit Review the equations above for correctness and summarize each verdict and confidence in a table.
+```
 
 ## CLI and Case Runner
 
