@@ -63,6 +63,8 @@ Perform dimensional analysis using `scripts/dimensional_check.py`:
 - Verify the governing equation is dimensionally consistent
 - Confirm the expected output dimensions match the physical quantity
 - Report: PASS / FAIL with details
+- Heat-transfer dimensions include heat rate, heat flux, conductivity, convection and overall coefficients, thermal diffusivity, and temperature.
+- Pass `--domain heat_transfer` to use heat-specific meanings for shared symbols such as `h`, `alpha`, `epsilon`, `sigma`, and `Q`.
 
 ### Step 6: Independent Calculation
 Execute numerical calculation using `scripts/calculate.py`:
@@ -71,7 +73,9 @@ Execute numerical calculation using `scripts/calculate.py`:
 - Return numerical value with units
 
 ### Step 7: Reference Verification
-Cross-check the equation and assumptions against `references/fluid_mechanics/references.json`:
+Cross-check the equation and assumptions against the domain database in
+`references/fluid_mechanics/references.json` or
+`references/heat_transfer/references.json`:
 - Verify equation form matches authoritative sources
 - Check assumptions are documented in references
 - Report any discrepancies between references
@@ -125,6 +129,7 @@ python scripts/units.py convert --value 72 --from km/h --to m/s
 
 # Dimensional check
 python scripts/dimensional_check.py --equation "rho*V*D/mu" --expected dimensionless
+python scripts/dimensional_check.py --equation "Qdot = h*A*(Ts-Tinf)" --expected W --domain heat_transfer
 
 # Numerical calculation
 python scripts/calculate.py --problem reynolds_number --inputs '{"rho":1.225,"V":20,"D":0.1,"mu":1.81e-5}'
@@ -162,14 +167,19 @@ python scripts/compare.py --computed 135000 --reported 135000 --tolerance 0.01
 2. **Darcy-Weisbach Pressure Drop**: `ΔP = f(L/D)(ρV²/2)` — pipe friction loss
 3. **Bernoulli Equation**: Energy conservation along a streamline
 4. **Mach Number**: `M = V/a`
+5. **Plane-Wall Conduction**: `Qdot = k A (T_hot - T_cold)/L`
+6. **Convection**: `Qdot = h A (Ts - Tinf)`
+7. **Surface Radiation**: `Qdot = εσA(Ts⁴ - Tsur⁴)` for a gray surface facing large surroundings
+8. **Heat-Exchanger LMTD**: `Qdot = U A ΔTlm`
 
 The verifier requires a reported result to return VERIFIED. Without a reported
 result it returns INSUFFICIENT INFORMATION and includes the calculation when
-inputs are sufficient. Other calculator types are standalone and are not
-end-to-end verified yet.
+inputs are sufficient. The 114-equation heat-transfer catalog is broader than
+the four heat-transfer workflows currently implemented.
 
 ### Reference Sources
-Stored in `references/fluid_mechanics/references.json` with structured format.
+Stored in `references/fluid_mechanics/references.json` and
+`references/heat_transfer/references.json` with structured source metadata.
 
 ---
 
@@ -241,5 +251,5 @@ Run the test suite to validate the Skill works:
 python .claude/skills/engineering-verification/scripts/test_runner.py
 ```
 
-This runs the 10 end-to-end cases for supported equations. The drag example is
+This runs the 22 end-to-end cases for supported equations. The drag example is
 calculator-only until it has an independent reference entry.

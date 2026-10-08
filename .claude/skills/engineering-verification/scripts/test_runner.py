@@ -12,7 +12,7 @@ from typing import Any, Dict, List, Optional, Tuple
 REPOSITORY_ROOT = Path(__file__).resolve().parents[4]
 VERIFY_SCRIPT = Path(__file__).resolve().with_name("verify.py")
 TESTS_DIR = REPOSITORY_ROOT / "tests" / "verification_cases"
-SUPPORTED_DOMAINS = {"reynolds", "pressure_drop", "bernoulli"}
+SUPPORTED_DOMAINS = {"reynolds", "pressure_drop", "bernoulli", "heat_transfer"}
 SUPPORTED_ROOT_CASES = {"mach_001"}
 VERDICT_ALIASES = {
     "PASS": "VERIFIED",

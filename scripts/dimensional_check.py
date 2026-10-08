@@ -82,6 +82,89 @@ VARIABLE_DIMENSIONS: Dict[str, Dimensions] = {
     "F_D": {"M": 1, "L": 1, "T": -2},
     "F_L": {"M": 1, "L": 1, "T": -2},
     "D_AB": {"L": 2, "T": -1},
+    # Heat-transfer quantities use distinct names where the fluid catalog
+    # already assigns a different meaning to a common symbol (for example h).
+    "Qdot": {"M": 1, "L": 2, "T": -3},
+    "Qdot_in": {"M": 1, "L": 2, "T": -3},
+    "Qdot_out": {"M": 1, "L": 2, "T": -3},
+    "Qdot_gen": {"M": 1, "L": 2, "T": -3},
+    "qflux": {"M": 1, "T": -3},
+    "qgen": {"M": 1, "L": -1, "T": -3},
+    "h_conv": {"M": 1, "T": -3, "Theta": -1},
+    "k_cond": {"M": 1, "L": 1, "T": -3, "Theta": -1},
+    "U_overall": {"M": 1, "T": -3, "Theta": -1},
+    "sigmaSB": {"M": 1, "T": -3, "Theta": -4},
+    "emissivity": {},
+    "alpha_th": {"L": 2, "T": -1},
+    "rho_s": {"M": 1, "L": -3},
+    "cp_s": {"L": 2, "T": -2, "Theta": -1},
+    "hfg": {"L": 2, "T": -2},
+    "T_hot": {"Theta": 1},
+    "T_cold": {"Theta": 1},
+    "Ts": {"Theta": 1},
+    "Tinf": {"Theta": 1},
+    "Tsur": {"Theta": 1},
+    "Thi": {"Theta": 1},
+    "Tci": {"Theta": 1},
+    "Tsat": {"Theta": 1},
+    "Tw": {"Theta": 1},
+    "T1": {"Theta": 1},
+    "T2": {"Theta": 1},
+    "DTlm": {"Theta": 1},
+    "Rth": {"M": -1, "L": -2, "T": 3, "Theta": 1},
+    "m_dot": {"M": 1, "T": -1},
+    "V_s": {"L": 3},
+    "A_s": {"L": 2},
+    "A_ref": {"L": 2},
+    "P_fin": {"L": 1},
+    "m_fin": {"L": -1},
+    "Bi": {},
+    "Fo": {},
+    "Nu": {},
+    "Pr": {},
+    "Ra": {},
+}
+
+# Heat transfer reuses several symbols with different meanings in fluid
+# mechanics (notably h, alpha, epsilon, sigma, and Q). Select this namespace
+# explicitly so neither discipline silently inherits the other's dimensions.
+HEAT_TRANSFER_VARIABLE_DIMENSIONS: Dict[str, Dimensions] = {
+    "Q": {"M": 1, "L": 2, "T": -3},
+    "Qdot": {"M": 1, "L": 2, "T": -3},
+    "Qdot_in": {"M": 1, "L": 2, "T": -3},
+    "Qdot_out": {"M": 1, "L": 2, "T": -3},
+    "q": {"M": 1, "T": -3},
+    "h": {"M": 1, "T": -3, "Theta": -1},
+    "U": {"M": 1, "T": -3, "Theta": -1},
+    "alpha": {"L": 2, "T": -1},
+    "epsilon": {},
+    "sigma": {"M": 1, "T": -3, "Theta": -4},
+    "sigma_surf": {"M": 1, "T": -2},
+    "beta": {"Theta": -1},
+    "rho_l": {"M": 1, "L": -3}, "rho_v": {"M": 1, "L": -3},
+    "mu_l": {"M": 1, "L": -1, "T": -1},
+    "k_l": {"M": 1, "L": 1, "T": -3, "Theta": -1},
+    "cp_l": {"L": 2, "T": -2, "Theta": -1},
+    "hfg_star": {"L": 2, "T": -2},
+    "hbar": {"M": 1, "T": -3, "Theta": -1},
+    "h_avg": {"M": 1, "T": -3, "Theta": -1},
+    "C": {"M": 1, "L": 2, "T": -3, "Theta": -1},
+    "Cmin": {"M": 1, "L": 2, "T": -3, "Theta": -1},
+    "Cmax": {"M": 1, "L": 2, "T": -3, "Theta": -1},
+    "Cr": {}, "NTU": {}, "jH": {}, "F": {}, "Phi": {},
+    "Re_D": {}, "Re_x": {}, "Nu_D": {}, "Nu_x": {}, "Nu_L": {},
+    "Ra_L": {}, "Ra_D": {}, "Gr_L": {}, "Gr_D": {}, "Pr_l": {},
+    "Lc": {"L": 1}, "lambda": {"L": 1}, "DeltaT": {"Theta": 1},
+    "Tavg": {"Theta": 1}, "Tc": {"Theta": 1}, "Tb": {"Theta": 1},
+    "E": {"M": 1, "T": -3}, "Eb": {"M": 1, "T": -3},
+    "G": {"M": 1, "T": -3}, "J": {"M": 1, "T": -3},
+    "Ib": {"M": 1, "T": -3}, "qrad": {"M": 1, "T": -3},
+    "eta": {}, "eta_fin": {}, "eta_o": {}, "epsilon_fin": {},
+    "T1": {"Theta": 1}, "T2": {"Theta": 1},
+    "Ts": {"Theta": 1}, "Tinf": {"Theta": 1}, "Tsur": {"Theta": 1},
+    "T_hot": {"Theta": 1}, "T_cold": {"Theta": 1},
+    "DTlm": {"Theta": 1}, "DeltaTlm": {"Theta": 1},
+    "tau": {"T": 1},
 }
 
 # Only aliases with the same physical dimensions belong here. Variables whose
@@ -94,6 +177,8 @@ FALLBACK_VARIABLES = {
 GREEK_REPLACEMENTS = {
     "ρ": "rho", "μ": "mu", "ν": "nu", "γ": "gamma", "σ": "sigma",
     "δ": "delta", "ΔP": "deltaP", "Δp": "deltaP", "θ": "theta",
+    "α": "alpha", "ε": "epsilon",
+    "β": "beta", "λ": "lambda", "η": "eta", "ΔTlm": "DTlm", "ΔT": "DeltaT",
     "Θ": "Theta", "π": "pi",
 }
 SUPERSCRIPTS = str.maketrans({"⁰": "0", "¹": "1", "²": "2", "³": "3",
@@ -121,8 +206,9 @@ def _scale(dims: Dimensions, factor: float) -> Dimensions:
 
 
 class _ExpressionParser:
-    def __init__(self, expression: str):
+    def __init__(self, expression: str, domain: str = "fluid_mechanics"):
         self.expression = self._normalize(expression)
+        self.domain = domain
         self.tokens = re.findall(r"[A-Za-z_][A-Za-z0-9_]*|(?:\d+(?:\.\d*)?|\.\d+)|\*\*|[()+\-*/^,]", self.expression)
         residue = re.sub(r"\s+", "", re.sub(r"[A-Za-z_][A-Za-z0-9_]*|(?:\d+(?:\.\d*)?|\.\d+)|\*\*|[()+\-*/^,]", "", self.expression))
         if residue:
@@ -222,7 +308,12 @@ class _ExpressionParser:
                 return {}, None
             raise DimensionalAnalysisError(f"Unsupported function '{token}'")
         variable = token
-        dimensions = VARIABLE_DIMENSIONS.get(variable)
+        dimensions = None
+        if self.domain == "heat_transfer":
+            if variable in HEAT_TRANSFER_VARIABLE_DIMENSIONS:
+                dimensions = HEAT_TRANSFER_VARIABLE_DIMENSIONS[variable]
+        if dimensions is None:
+            dimensions = VARIABLE_DIMENSIONS.get(variable)
         if dimensions is None:
             fallback = FALLBACK_VARIABLES.get(variable)
             dimensions = VARIABLE_DIMENSIONS.get(fallback) if fallback else None
@@ -231,17 +322,17 @@ class _ExpressionParser:
         return dict(dimensions), None
 
 
-def parse_equation(equation: str) -> Dimensions:
+def parse_equation(equation: str, domain: str = "fluid_mechanics") -> Dimensions:
     """Return dimensions of the right-hand side and check both equation sides."""
     normalized = _ExpressionParser._normalize(equation)
     if "=" in normalized:
         left_text, right_text = normalized.split("=", 1)
-        left_dims, _ = _ExpressionParser(left_text).parse()
-        right_dims, _ = _ExpressionParser(right_text).parse()
+        left_dims, _ = _ExpressionParser(left_text, domain).parse()
+        right_dims, _ = _ExpressionParser(right_text, domain).parse()
         if left_dims != right_dims:
             raise DimensionalAnalysisError("Left and right sides have different dimensions")
         return right_dims
-    return _ExpressionParser(normalized).parse()[0]
+    return _ExpressionParser(normalized, domain).parse()[0]
 
 
 def format_dimensions(dims: Dimensions) -> str:
@@ -258,10 +349,12 @@ def format_dimensions(dims: Dimensions) -> str:
     return " ".join(parts)
 
 
-def expected_dimensions(target: str) -> Dimensions:
+def expected_dimensions(target: str, domain: str = "fluid_mechanics") -> Dimensions:
     if target.lower() in ("dimensionless", "1", ""):
         return {}
     variable = target.strip()
+    if domain == "heat_transfer" and variable in HEAT_TRANSFER_VARIABLE_DIMENSIONS:
+        return dict(HEAT_TRANSFER_VARIABLE_DIMENSIONS[variable])
     if variable in VARIABLE_DIMENSIONS:
         return dict(VARIABLE_DIMENSIONS[variable])
     fallback = FALLBACK_VARIABLES.get(variable)
@@ -288,10 +381,10 @@ def expected_dimensions(target: str) -> Dimensions:
     return {conversion.get(key, key): value for key, value in dims.items() if value}
 
 
-def check_equation(equation: str, expected: str) -> Dict[str, object]:
+def check_equation(equation: str, expected: str, domain: str = "fluid_mechanics") -> Dict[str, object]:
     try:
-        computed = parse_equation(equation)
-        target = expected_dimensions(expected)
+        computed = parse_equation(equation, domain)
+        target = expected_dimensions(expected, domain)
         match = computed == target
         error = None
     except DimensionalAnalysisError as exc:
@@ -301,6 +394,7 @@ def check_equation(equation: str, expected: str) -> Dict[str, object]:
         error = str(exc)
     return {
         "equation": equation,
+        "domain": domain,
         "expected": expected,
         "expected_dimensions": format_dimensions(target),
         "computed_dimensions": format_dimensions(computed),
@@ -315,10 +409,12 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Check dimensional consistency of an equation")
     parser.add_argument("--equation", required=True, help="Equation to check")
     parser.add_argument("--expected", required=True, help="Expected unit or dimension (for example Pa)")
+    parser.add_argument("--domain", choices=("fluid_mechanics", "heat_transfer"), default="fluid_mechanics",
+                        help="Select a variable-dimension namespace for discipline-specific symbols")
     parser.add_argument("--verbose", action="store_true", help="Print structured JSON")
     args = parser.parse_args()
 
-    result = check_equation(args.equation, args.expected)
+    result = check_equation(args.equation, args.expected, args.domain)
     if args.verbose:
         print(json.dumps(result, indent=2))
     else:

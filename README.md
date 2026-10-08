@@ -17,9 +17,16 @@ cd engineering-verification-agent
 # Verify a Reynolds number calculation
 python scripts/calculate.py --problem reynolds_number --inputs '{"rho":1.177,"V":20,"D":0.1,"mu":1.85e-5}'
 
+# Calculate steady heat conduction through a plane wall
+python scripts/calculate.py --problem plane_wall_conduction --inputs '{"k":15,"A":2,"T_hot":400,"T_cold":300,"L":0.05}'
+
 # Run the end-to-end verifier on a problem file
 python .claude/skills/engineering-verification/scripts/verify.py \
   --problem-file tests/verification_cases/reynolds/reynolds_001/problem.md
+
+# Verify a heat-transfer result end to end
+python .claude/skills/engineering-verification/scripts/verify.py \
+  --problem-file tests/verification_cases/heat_transfer/plane_wall_conduction_001/problem.md
 
 # Check dimensional consistency
 python scripts/dimensional_check.py --equation "rho*V*D/mu" --expected dimensionless
@@ -47,8 +54,10 @@ engineering-verification-agent/
 │   ├── pressure_drop.md
 │   └── bernoulli.md
 ├── references/
-│   └── fluid_mechanics/
-│       └── references.json       # Structured equation and source records
+│   ├── fluid_mechanics/
+│   │   └── references.json       # Fluid-mechanics equation and source records
+│   └── heat_transfer/
+│       └── references.json       # 114 heat-transfer equations with source metadata
 ├── scripts/                      # Deterministic Python CLI tools
 │   ├── units.py                  # Unit conversion & dimensional analysis
 │   ├── dimensional_check.py      # Equation dimensional verification
@@ -59,7 +68,8 @@ engineering-verification-agent/
 │       ├── reynolds/
 │       ├── pressure_drop/
 │       ├── bernoulli/
-│       └── mach_001/
+│       ├── heat_transfer/
+│       └── mach_001/             # Single root-level verification case
 ├── CLAUDE.md                     # Project principles
 └── README.md
 ```
@@ -93,18 +103,25 @@ engineering-verification-agent/
 
 ## Supported Scope
 
-The standalone calculator CLI exposes 18 calculation types. The end-to-end
-verifier currently supports four problem types and requires a reported result
-to issue a VERIFIED verdict:
+The standalone calculator CLI exposes 22 calculation types. The end-to-end
+verifier supports eight problem types and requires a reported result to issue
+a VERIFIED verdict:
 
 1. **Reynolds Number**: `Re = ρVD/μ` — flow regime determination
 2. **Darcy-Weisbach**: `ΔP = f(L/D)(ρV²/2)` — pipe friction loss
 3. **Bernoulli**: `P₁/ρ + V₁²/2 + gz₁ = P₂/ρ + V₂²/2 + gz₂` — energy conservation
 4. **Mach Number**: `M = V/a` — ratio of flow speed to sound speed
+5. **Plane-Wall Conduction**: `Qdot = k A (T_hot - T_cold)/L`
+6. **Convection**: `Qdot = h A (Ts - Tinf)`
+7. **Surface Radiation**: `Qdot = εσA(Ts⁴ - Tsur⁴)` for a gray surface facing large surroundings
+8. **Heat-Exchanger LMTD**: `Qdot = U A ΔTlm`
 
 Other calculator types are callable directly, but do not yet have an end-to-end
 verification workflow. [eq.md](eq.md) is an equation catalog and expansion
-roadmap, not a claim that all listed equations are implemented.
+roadmap, not a claim that all listed equations are implemented. The heat-transfer
+reference contains 114 equations; the four listed above have end-to-end support.
+[references/heat_transfer/references.json](references/heat_transfer/references.json)
+contains the sourced equation catalog and chapter-level source records.
 
 ## Dependencies
 
@@ -168,6 +185,8 @@ To review equations already present in the conversation, invoke:
 ```bash
 # Dimensional check
 python scripts/dimensional_check.py --equation "rho*V*D/mu" --expected dimensionless
+python scripts/dimensional_check.py --equation "Qdot = k*A*(T_hot-T_cold)/L" --expected W --domain heat_transfer
+python scripts/dimensional_check.py --equation "Qdot = h*A*(Ts-Tinf)" --expected W --domain heat_transfer
 
 # Deterministic calculation
 python scripts/calculate.py --problem reynolds_number --inputs '{"rho":1.177,"V":20,"D":0.1,"mu":1.85e-5}'
@@ -181,7 +200,7 @@ python .claude/skills/engineering-verification/scripts/test_runner.py
 
 ## Development Phases
 
-- **Current**: Four end-to-end fluid-mechanics workflows; 18 standalone calculator types
+- **Current**: Eight end-to-end workflows (four fluid mechanics, four heat transfer); 22 standalone calculator types
 - **Phase 2**: Automated evaluation, regression tests, accuracy metrics
 - **Phase 3**: Authoritative references expansion, assumption checking
 - **Phase 4**: Local MCP server for tool interfaces

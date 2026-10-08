@@ -14,6 +14,11 @@ from typing import Any, Dict, List, Optional, Tuple
 REPOSITORY_ROOT = Path(__file__).resolve().parents[4]
 SCRIPTS_DIR = REPOSITORY_ROOT / "scripts"
 REFERENCES_FILE = REPOSITORY_ROOT / "references" / "fluid_mechanics" / "references.json"
+HEAT_TRANSFER_REFERENCES_FILE = REPOSITORY_ROOT / "references" / "heat_transfer" / "references.json"
+REFERENCE_FILES = {
+    "fluid_mechanics": REFERENCES_FILE,
+    "heat_transfer": HEAT_TRANSFER_REFERENCES_FILE,
+}
 
 PROBLEM_DEFINITIONS = {
     "reynolds_number": {
@@ -56,6 +61,50 @@ PROBLEM_DEFINITIONS = {
         "required": [("V", "a")],
         "assumptions": ["speed of sound is defined for the stated medium and conditions"],
     },
+    "plane_wall_conduction": {
+        "name": "Plane-Wall Conduction Heat Rate",
+        "domain": "heat_transfer",
+        "reference": "plane_wall_heat_rate",
+        "equation": "Qdot = k*A*(T_hot-T_cold)/L",
+        "expected": "W",
+        "calculator": "plane_wall_conduction",
+        "result_key": "heat_rate_W",
+        "required": [("k", "A", "T_hot", "T_cold", "L")],
+        "assumptions": ["steady state", "one-dimensional conduction", "constant conductivity", "no internal heat generation"],
+    },
+    "convective_heat_transfer": {
+        "name": "Convective Heat Transfer Rate",
+        "domain": "heat_transfer",
+        "reference": "newton_cooling",
+        "equation": "Qdot = h*A*(Ts-Tinf)",
+        "expected": "W",
+        "calculator": "convective_heat_transfer",
+        "result_key": "heat_rate_W",
+        "required": [("h_conv", "A", "Ts", "Tinf")],
+        "assumptions": ["Newton law of cooling", "specified representative convection coefficient", "uniform surface temperature"],
+    },
+    "radiative_heat_transfer": {
+        "name": "Radiative Heat Transfer to Large Surroundings",
+        "domain": "heat_transfer",
+        "reference": "stefan_boltzmann_net_large_surroundings",
+        "equation": "Qdot = epsilon*sigma*A*(Ts^4-Tsur^4)",
+        "expected": "W",
+        "calculator": "radiative_heat_transfer",
+        "result_key": "heat_rate_W",
+        "required": [("emissivity", "A", "Ts", "Tsur")],
+        "assumptions": ["opaque diffuse-gray surface", "large isothermal surroundings", "view factor approximately one", "absolute temperatures"],
+    },
+    "heat_exchanger_lmtd": {
+        "name": "Heat-Exchanger LMTD Heat Rate",
+        "domain": "heat_transfer",
+        "reference": "lmtd_heat_exchanger",
+        "equation": "Qdot = U*A*DTlm",
+        "expected": "W",
+        "calculator": "heat_exchanger_lmtd",
+        "result_key": "heat_rate_W",
+        "required": [("U_overall", "A", "DTlm")],
+        "assumptions": ["steady operation", "supplied log-mean temperature difference includes any required correction factor", "overall coefficient and area use a consistent area basis"],
+    },
 }
 
 INPUT_ALIASES = {
@@ -71,8 +120,29 @@ INPUT_ALIASES = {
     "diameteratpoint1": "D1", "diameter1": "D1", "d1": "D1",
     "diameteratpoint2": "D2", "diameter2": "D2", "d2": "D2",
     "speedofsound": "a", "soundspeed": "a", "a": "a",
+    "thermalconductivity": "k", "conductivity": "k", "k": "k",
+    "area": "A", "surfacearea": "A", "heattransferarea": "A", "a": "a",
+    "hottemperature": "T_hot", "hotsidetemperature": "T_hot", "thot": "T_hot",
+    "coldtemperature": "T_cold", "coldsidetemperature": "T_cold", "tcold": "T_cold",
+    "walltemperature": "Ts", "surfacetemperature": "Ts", "ts": "Ts",
+    "ambienttemperature": "Tinf", "fluidtemperature": "Tinf", "tinf": "Tinf",
+    "surroundingstemperature": "Tsur", "surroundingtemperature": "Tsur", "tsur": "Tsur",
+    "emissivity": "emissivity", "epsilon": "emissivity",
+    "convectioncoefficient": "h_conv", "heattransfercoefficient": "h_conv", "hconv": "h_conv",
+    "overallheattransfercoefficient": "U_overall", "overallcoefficient": "U_overall", "uoverall": "U_overall",
+    "logmeantemperaturedifference": "DTlm", "correctedlogmeantemperaturedifference": "DTlm", "dtlm": "DTlm",
+    "wallthickness": "L", "thickness": "L",
 }
-DIMENSIONLESS_INPUTS = {"f"}
+DIMENSIONLESS_INPUTS = {"f", "emissivity"}
+INPUT_SI_UNITS = {
+    "k": "watt / meter / kelvin",
+    "h_conv": "watt / meter ** 2 / kelvin",
+    "U_overall": "watt / meter ** 2 / kelvin",
+    "A": "meter ** 2",
+    "L": "meter",
+    "T_hot": "kelvin", "T_cold": "kelvin", "Ts": "kelvin",
+    "Tinf": "kelvin", "Tsur": "kelvin", "DTlm": "delta_kelvin",
+}
 SUPERSCRIPTS = str.maketrans({"⁰": "0", "¹": "1", "²": "2", "³": "3",
                               "⁴": "4", "⁵": "5", "⁶": "6", "⁷": "7",
                               "⁸": "8", "⁹": "9", "⁻": "-", "⁺": "+",
@@ -85,6 +155,28 @@ def canonical_input_name(label: str) -> Optional[str]:
     normalized = re.sub(r"[^a-z0-9]", "", normalized)
     if normalized in INPUT_ALIASES:
         return INPUT_ALIASES[normalized]
+    if "overallheattransfercoefficient" in normalized or "overallcoefficient" in normalized:
+        return "U_overall"
+    if "thermalconductivity" in normalized:
+        return "k"
+    if "emissivity" in normalized:
+        return "emissivity"
+    if "convectioncoefficient" in normalized or "heattransfercoefficient" in normalized:
+        return "h_conv"
+    if "surroundingstemperature" in normalized or "surroundingtemperature" in normalized:
+        return "Tsur"
+    if "ambienttemperature" in normalized or "fluidtemperature" in normalized:
+        return "Tinf"
+    if "walltemperature" in normalized or "surfacetemperature" in normalized:
+        return "Ts"
+    if "hottemperature" in normalized or "hotsidetemperature" in normalized:
+        return "T_hot"
+    if "coldtemperature" in normalized or "coldsidetemperature" in normalized:
+        return "T_cold"
+    if "logmeantemperaturedifference" in normalized:
+        return "DTlm"
+    if "surfacearea" in normalized or "heattransferarea" in normalized:
+        return "A"
     # Prefer point-specific forms before the generic quantity names.
     for phrase, canonical in (
         ("velocityatpoint1", "V1"), ("diameteratpoint1", "D1"),
@@ -164,6 +256,14 @@ class VerificationEngine:
 
     def detect_problem(self, text: str) -> Optional[str]:
         lowered = text.lower()
+        if "heat exchanger" in lowered or "heat-exchanger" in lowered or "lmtd" in lowered:
+            return "heat_exchanger_lmtd"
+        if "radiation" in lowered or "radiative" in lowered or "emissivity" in lowered:
+            return "radiative_heat_transfer"
+        if "convection" in lowered or "convective" in lowered or "newton's law of cooling" in lowered:
+            return "convective_heat_transfer"
+        if "plane-wall conduction" in lowered or "plane wall conduction" in lowered or "fourier conduction" in lowered:
+            return "plane_wall_conduction"
         if "reynolds" in lowered:
             return "reynolds_number"
         if "bernoulli" in lowered:
@@ -204,6 +304,9 @@ class VerificationEngine:
                         if unit.lower() == "kpa":
                             value *= 1000.0
                             unit = "Pa (converted from kPa)"
+                        elif unit.lower() == "kw":
+                            value *= 1000.0
+                            unit = "W (converted from kW)"
                         reported = {"key": key, "value": value, "unit": unit or "SI"}
                         break
                 continue
@@ -238,6 +341,17 @@ class VerificationEngine:
             if not unit:
                 issues.append(f"{name}: unit is missing")
                 continue
+            if name in INPUT_SI_UNITS:
+                result = self.run_tool("units", [
+                    "convert", "--value", str(value), "--from", unit, "--to", INPUT_SI_UNITS[name],
+                ])
+                if isinstance(result, (int, float)):
+                    si_values[name] = float(result)
+                elif "error" in result:
+                    issues.append(f"{name}: {result['error']}")
+                else:
+                    issues.append(f"{name}: unit conversion did not return a number")
+                continue
             result = self.run_tool("units", ["si", "--value", str(value), "--unit", unit])
             if "error" in result or "value" not in result:
                 issues.append(f"{name}: {result.get('error', 'unit conversion failed')}")
@@ -245,7 +359,7 @@ class VerificationEngine:
             si_values[name] = float(result["value"])
         return si_values, issues
 
-    def load_references(self) -> Dict[str, Any]:
+    def load_references(self, domain: str = "fluid_mechanics") -> Dict[str, Any]:
         def reject_duplicates(pairs):
             result = {}
             for key, value in pairs:
@@ -254,10 +368,35 @@ class VerificationEngine:
                 result[key] = value
             return result
 
-        with REFERENCES_FILE.open(encoding="utf-8") as handle:
+        reference_file = REFERENCE_FILES.get(domain)
+        if reference_file is None:
+            raise ValueError(f"Unknown reference domain '{domain}'")
+        with reference_file.open(encoding="utf-8") as handle:
             data = json.load(handle, object_pairs_hook=reject_duplicates)
         if not isinstance(data, dict):
             raise ValueError("Reference database root must be an object")
+        if domain == "heat_transfer":
+            metadata = data.get("metadata", {})
+            sources = metadata.get("sources", {})
+            equations = data.get("equations", {})
+            if not isinstance(sources, dict) or not isinstance(equations, dict):
+                raise ValueError("Heat-transfer reference must contain source and equation objects")
+            normalized = {}
+            for key, item in equations.items():
+                if not isinstance(item, dict) or not isinstance(item.get("equation"), str):
+                    raise ValueError(f"Heat-transfer reference '{key}' must include an equation string")
+                source = sources.get(item.get("source"))
+                if not isinstance(source, dict) or not isinstance(source.get("title"), str):
+                    raise ValueError(f"Heat-transfer reference '{key}' has no valid source record")
+                assumptions = item.get("assumptions", [])
+                if not isinstance(assumptions, list):
+                    raise ValueError(f"Heat-transfer reference '{key}' assumptions must be a list")
+                normalized[key] = {
+                    "equation": item["equation"],
+                    "sources": [source],
+                    "assumptions": assumptions,
+                }
+            return normalized
         for key, item in data.items():
             if not isinstance(item, dict) or not isinstance(item.get("equation"), str):
                 raise ValueError(f"Reference '{key}' must include an equation string")
@@ -268,9 +407,9 @@ class VerificationEngine:
                     raise ValueError(f"Reference '{key}' contains a source without a title")
         return data
 
-    def check_reference(self, reference_id: str) -> Dict[str, Any]:
+    def check_reference(self, reference_id: str, domain: str = "fluid_mechanics") -> Dict[str, Any]:
         try:
-            data = self.load_references()
+            data = self.load_references(domain)
         except (OSError, json.JSONDecodeError, ValueError) as exc:
             return {"status": "FAIL", "error": str(exc)}
         item = data.get(reference_id)
@@ -315,12 +454,16 @@ class VerificationEngine:
             required = definition["required"][0]
             missing = [name for name in required if name not in si_inputs]
 
-        dimensional = self.run_tool("dimensional_check", [
-            "--equation", definition["equation"], "--expected", definition["expected"], "--verbose",
-        ])
+        dimensional_args = [
+            "--equation", definition["equation"], "--expected", definition["expected"],
+        ]
+        if definition.get("domain"):
+            dimensional_args.extend(["--domain", definition["domain"]])
+        dimensional_args.append("--verbose")
+        dimensional = self.run_tool("dimensional_check", dimensional_args)
         dimensional["status"] = "PASS" if dimensional.get("match") else "FAIL"
 
-        reference = self.check_reference(definition["reference"])
+        reference = self.check_reference(definition["reference"], definition.get("domain", "fluid_mechanics"))
         calculation: Dict[str, Any] = {}
         if not missing and not unit_issues and not input_issues:
             calculation = self.run_tool("calculate", [
@@ -397,6 +540,10 @@ class VerificationEngine:
             "pressure_drop": ("rho", "D"),
             "bernoulli": ("rho", "D1", "D2"),
             "mach_number": ("a",),
+            "plane_wall_conduction": ("k", "A", "L"),
+            "convective_heat_transfer": ("h_conv", "A"),
+            "radiative_heat_transfer": ("A", "Ts", "Tsur"),
+            "heat_exchanger_lmtd": ("U_overall", "A", "DTlm"),
         }[problem_type]
         for name in strictly_positive:
             if name in inputs and inputs[name] <= 0:
@@ -407,6 +554,10 @@ class VerificationEngine:
             "pressure_drop": ("V", "L", "f"),
             "bernoulli": ("V1",),
             "mach_number": ("V",),
+            "plane_wall_conduction": (),
+            "convective_heat_transfer": (),
+            "radiative_heat_transfer": (),
+            "heat_exchanger_lmtd": (),
         }[problem_type]
         for name in non_negative:
             if name in inputs and inputs[name] < 0:
@@ -416,6 +567,12 @@ class VerificationEngine:
             for name in ("mu", "nu"):
                 if name in inputs and inputs[name] == 0:
                     issues.append(f"{name} must be greater than zero")
+        for name in ("T_hot", "T_cold", "Ts", "Tinf", "Tsur"):
+            if name in inputs and inputs[name] < 0:
+                issues.append(f"{name} must be a non-negative absolute temperature")
+        if problem_type == "radiative_heat_transfer" and "emissivity" in inputs:
+            if not 0 <= inputs["emissivity"] <= 1:
+                issues.append("emissivity must be between zero and one")
         return issues
 
     @staticmethod
@@ -455,6 +612,25 @@ class VerificationEngine:
                 issues.append("Mach number must be finite and non-negative")
             else:
                 checks.append(f"Finite non-negative Mach number ({mach:.6g})")
+        elif problem_type in {
+            "plane_wall_conduction", "convective_heat_transfer",
+            "radiative_heat_transfer", "heat_exchanger_lmtd",
+        }:
+            heat_rate = calculation.get("heat_rate_W")
+            if heat_rate is None or not math.isfinite(heat_rate):
+                issues.append("Calculated heat-transfer rate must be finite")
+            else:
+                checks.append(f"Finite heat-transfer rate ({heat_rate:.6g} W)")
+                if problem_type == "plane_wall_conduction":
+                    expected_sign = inputs["T_hot"] - inputs["T_cold"]
+                elif problem_type == "convective_heat_transfer":
+                    expected_sign = inputs["Ts"] - inputs["Tinf"]
+                elif problem_type == "radiative_heat_transfer":
+                    expected_sign = inputs["Ts"] - inputs["Tsur"]
+                else:
+                    expected_sign = 1
+                if heat_rate * expected_sign < 0:
+                    issues.append("Heat-transfer rate sign conflicts with the temperature driving force")
         return {"status": "FAIL" if issues else "PASS", "checks": checks, "issues": issues}
 
     @staticmethod

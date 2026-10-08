@@ -279,6 +279,67 @@ def calculate_stagnation(inputs: Dict[str, float]) -> Dict[str, Any]:
     }
 
 
+def _validate_heat_inputs(inputs: Dict[str, float], positive: tuple[str, ...]) -> None:
+    for name, value in inputs.items():
+        if not math.isfinite(value):
+            raise ValueError(f"{name} must be finite")
+    for name in positive:
+        if inputs[name] <= 0:
+            raise ValueError(f"{name} must be greater than zero")
+
+
+def calculate_plane_wall_conduction(inputs: Dict[str, float]) -> Dict[str, Any]:
+    """Steady one-dimensional heat rate through a plane wall."""
+    _validate_heat_inputs(inputs, ("k", "A", "L"))
+    if inputs["T_hot"] < 0 or inputs["T_cold"] < 0:
+        raise ValueError("absolute temperatures must be non-negative")
+    heat_rate = inputs["k"] * inputs["A"] * (inputs["T_hot"] - inputs["T_cold"]) / inputs["L"]
+    return {
+        "heat_rate_W": heat_rate,
+        "heat_rate_kW": heat_rate / 1000,
+        "equation": "Qdot = k*A*(T_hot-T_cold)/L",
+    }
+
+
+def calculate_convective_heat_transfer(inputs: Dict[str, float]) -> Dict[str, Any]:
+    """Newton's law of cooling for a surface with specified h."""
+    _validate_heat_inputs(inputs, ("h_conv", "A"))
+    if inputs["Ts"] < 0 or inputs["Tinf"] < 0:
+        raise ValueError("absolute temperatures must be non-negative")
+    heat_rate = inputs["h_conv"] * inputs["A"] * (inputs["Ts"] - inputs["Tinf"])
+    return {
+        "heat_rate_W": heat_rate,
+        "heat_rate_kW": heat_rate / 1000,
+        "equation": "Qdot = h_conv*A*(Ts-Tinf)",
+    }
+
+
+def calculate_radiative_heat_transfer(inputs: Dict[str, float]) -> Dict[str, Any]:
+    """Net gray-surface radiation to large isothermal surroundings."""
+    _validate_heat_inputs(inputs, ("A", "Ts", "Tsur"))
+    emissivity = inputs["emissivity"]
+    if not 0 <= emissivity <= 1:
+        raise ValueError("emissivity must be between zero and one")
+    sigma = 5.670374419e-8  # W/(m^2 K^4), exact SI value to current precision
+    heat_rate = emissivity * sigma * inputs["A"] * (inputs["Ts"]**4 - inputs["Tsur"]**4)
+    return {
+        "heat_rate_W": heat_rate,
+        "heat_rate_kW": heat_rate / 1000,
+        "equation": "Qdot = emissivity*sigmaSB*A*(Ts^4-Tsur^4)",
+    }
+
+
+def calculate_heat_exchanger_lmtd(inputs: Dict[str, float]) -> Dict[str, Any]:
+    """Heat-exchanger rate using a supplied corrected log-mean temperature difference."""
+    _validate_heat_inputs(inputs, ("U_overall", "A", "DTlm"))
+    heat_rate = inputs["U_overall"] * inputs["A"] * inputs["DTlm"]
+    return {
+        "heat_rate_W": heat_rate,
+        "heat_rate_kW": heat_rate / 1000,
+        "equation": "Qdot = U_overall*A*DTlm",
+    }
+
+
 def main():
     parser = argparse.ArgumentParser(description="Engineering calculation engine")
     parser.add_argument("--problem", required=True, choices=sorted({
@@ -286,7 +347,9 @@ def main():
         "froude_number", "euler_number", "weber_number", "prandtl_number",
         "schmidt_number", "hagen_poiseuille", "drag", "lift",
         "drag_to_lift", "skin_friction_laminar", "skin_friction_turbulent",
-        "boundary_layer_laminar", "boundary_layer_turbulent", "stagnation"
+        "boundary_layer_laminar", "boundary_layer_turbulent", "stagnation",
+        "plane_wall_conduction", "convective_heat_transfer",
+        "radiative_heat_transfer", "heat_exchanger_lmtd"
     }),
         help="Problem type to calculate")
     parser.add_argument("--inputs", required=True, help="JSON string of input parameters")
@@ -319,6 +382,10 @@ def main():
         "boundary_layer_laminar": calculate_boundary_layer_laminar,
         "boundary_layer_turbulent": calculate_boundary_layer_turbulent,
         "stagnation": calculate_stagnation,
+        "plane_wall_conduction": calculate_plane_wall_conduction,
+        "convective_heat_transfer": calculate_convective_heat_transfer,
+        "radiative_heat_transfer": calculate_radiative_heat_transfer,
+        "heat_exchanger_lmtd": calculate_heat_exchanger_lmtd,
     }[args.problem]
 
     try:
