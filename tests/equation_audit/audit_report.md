@@ -41,3 +41,17 @@ not establish symbolic correctness.
   official text states the conventional Biot and Nusselt definitions and the
   LMTD relation; see [A Heat Transfer Textbook, sixth edition](https://ahtt.mit.edu/wp-content/uploads/2024/04/AHTTv600.pdf).
 
+## Expanded benchmark
+
+`benchmark_cases.json` combines the original 20 heat-transfer cases with 20
+additional equations from a mixed fluid/heat set (11 fluid-mechanics and 29
+heat-transfer cases overall). It includes an ambiguous volumetric-generation
+symbol, vector and differential notation beyond the parser, and incorrect
+equations that remain dimensionally consistent. Run
+`python tests/equation_audit/run_benchmark.py --check-dimensions` to check the
+fixture's dimensional expectations. The current run matched **40/40**
+expectations; three cases are intentionally left to symbolic review because
+the parser cannot check their notation. The case labels are an internal
+reference-aligned baseline and have not been independently reviewed by domain
+experts. The `Eb = sigma*T^4` case confirms the checker treats emissive power as
+W/m².

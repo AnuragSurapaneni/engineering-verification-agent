@@ -1,7 +1,6 @@
 ---
 name: equation-audit
 description: Review equations in the current conversation or supplied engineering material for form, dimensional consistency, and reference agreement, then report verdicts with confidence in a table.
-compatibility: "For dimensional checks, requires Python 3 and this repository's scripts/dimensional_check.py."
 metadata:
   version: "1.0.0"
   author: "Engineering Verification Agent"
@@ -47,10 +46,13 @@ each result in a table with a confidence level.
    A parser error or unsupported variable means the dimensional check is
    unavailable; it does not by itself mean the equation is wrong. Distinguish a
    genuine mismatch between equation sides from a limitation of the checker.
-3. **Check the equation form.** Compare relevant equations with
-   `references/fluid_mechanics/references.json` and its alternate forms. Check
-   definitions, sign conventions, coefficients, and assumptions. A reference
-   match supports the equation only within the reference's stated scope.
+3. **Check the equation form.** Select the reference catalog that matches the
+   equation's domain: use `references/fluid_mechanics/references.json` for fluid
+   mechanics and `references/heat_transfer/references.json` for heat transfer.
+   For coupled or ambiguous topics, check both when relevant. Compare alternate
+   forms, definitions, sign conventions, coefficients, and assumptions. Cite
+   the reference entry/source used; a match supports the equation only within
+   its stated scope. Catalog inclusion alone is not proof of correctness.
 4. **Check the reasoning.** When no direct reference match exists, verify
    algebraic steps from the stated governing equation where possible. Use
    limiting cases or a simple substitution only when they are meaningful.
@@ -90,3 +92,19 @@ After the table, give a short overall summary. Name the local reference or
 dimensional check used when relevant. If a numerical result is also present,
 only validate it when the context supplies enough values and units; separate
 that result from the symbolic equation verdict.
+
+## Benchmark
+
+When changing this skill or its dimensional checker, run the equation-audit
+benchmark from the repository root:
+
+```bash
+python tests/equation_audit/run_benchmark.py --check-dimensions
+```
+
+To score an audit, save its verdicts as JSON with a `results` array of
+`{"id": "HT-01", "verdict": "Correct"}` records, then pass the file with
+`--results`. The benchmark covers fluid mechanics and heat transfer, including
+ambiguous and parser-limited cases. Its expected labels are a reference-aligned
+internal baseline; they have not had independent expert review. Do not present
+benchmark performance as expert validation.
